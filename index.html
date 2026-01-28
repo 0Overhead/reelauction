@@ -173,7 +173,7 @@
         }
 
         .user-info {
-            display: flex;
+            display: none !important; /* Hidden - info available in hamburger menu */
             align-items: center;
             gap: 0.5rem;
             padding: 0.5rem 0.75rem;
@@ -392,8 +392,9 @@
             border-radius: 16px;
             overflow: hidden;
             border: 3px solid var(--accent-fire);
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             touch-action: pinch-zoom;
+            max-height: 50vh;
         }
 
         #videoPreview,
@@ -402,6 +403,8 @@
             display: block;
             background: #000;
             touch-action: pinch-zoom;
+            max-height: 50vh;
+            object-fit: cover;
         }
 
         .camera-overlay {
@@ -422,8 +425,8 @@
             gap: 1rem;
             justify-content: center;
             align-items: center;
-            margin-bottom: 2rem;
-            padding: 1rem;
+            margin-bottom: 1rem;
+            padding: 0.75rem;
             background: var(--bg-card);
             border-radius: 12px;
             border: 2px solid var(--border);
@@ -1163,11 +1166,11 @@
         <!-- Camera Section -->
         <section id="cameraSection" class="section">
             <div class="camera-container">
-                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center;">
                     Create Content
                 </h2>
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
-                    Capture a photo or video right now to list on auction
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
+                    Capture a photo or video right now
                 </p>
 
                 <!-- Camera View (Isolated for pinch-zoom) -->
@@ -1539,7 +1542,7 @@
 
         function updateUserInterface() {
             if (currentUser) {
-                document.getElementById('userInfo').style.display = 'flex';
+                // Don't show user info in header - it's in hamburger menu instead
                 document.getElementById('hamburgerBtn').style.display = 'flex';
                 document.getElementById('userName').textContent = currentUser.name;
                 document.getElementById('userBalance').textContent = `$${currentUser.balance.toFixed(2)}`;
@@ -1564,7 +1567,6 @@
                     document.getElementById('creatorQuickActions').style.display = 'none';
                 }
             } else {
-                document.getElementById('userInfo').style.display = 'none';
                 document.getElementById('hamburgerBtn').style.display = 'none';
                 document.getElementById('navCreateContent').style.display = 'none';
                 document.getElementById('navPostEvent').style.display = 'none';
