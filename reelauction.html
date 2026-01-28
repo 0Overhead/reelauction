@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>ReelAuction - Real Reels. Real Time.</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0a0a0a;
+            --bg-card: #1a1a1a;
+            --accent-fire: #ff3d00;
+            --accent-gold: #ffd700;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --border: #2a2a2a;
+            --success: #00ff88;
+            --warning: #ff9500;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(255, 61, 0, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 70%, rgba(255, 215, 0, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 1.5rem;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-card);
+            border-radius: 100px;
+            border: 1px solid var(--border);
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+            font-weight: 700;
+        }
+
+        .balance {
+            font-weight: 700;
+            color: var(--success);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-fire), #ff6b3d);
+            color: white;
+            box-shadow: 0 4px 20px rgba(255, 61, 0, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(255, 61, 0, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+        }
+
+        .btn-ghost:hover {
+            color: var(--text-primary);
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2rem, 6vw, 4rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -2px;
+        }
+
+        .hero .gradient-text {
+            background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Sections */
+        .section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            max-width: 400px;
+            margin: 3rem auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2.5rem;
+        }
+
+        .auth-container h2 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-container p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.875rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent-fire);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Camera Section */
+        .camera-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .camera-view {
+            position: relative;
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        #videoPreview,
+        #capturedMedia {
+            width: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 700;
+            color: var(--accent-fire);
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+
+        .record-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 4px solid var(--accent-fire);
+            background: transparent;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .record-btn.recording {
+            animation: recordPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes recordPulse {
+            0%, 100% { border-color: var(--accent-fire); }
+            50% { border-color: var(--accent-gold); }
+        }
+
+        .record-btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            height: 50%;
+            background: var(--accent-fire);
+            border-radius: 50%;
+        }
+
+        .record-btn.recording::after {
+            border-radius: 8px;
+        }
+
+        /* Auction Grid */
+        .auction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .auction-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .auction-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-fire);
+            box-shadow: 0 8px 30px rgba(255, 61, 0, 0.2);
+        }
+
+        .auction-media {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .auction-media img,
+        .auction-media video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .watermark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 2rem;
+            color: rgba(255, 255, 255, 0.3);
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        .auction-timer {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 0.5rem 0.75rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--accent-fire);
+        }
+
+        .auction-info {
+            padding: 1.25rem;
+        }
+
+        .auction-description {
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            font-size: 0.9rem;
+        }
+
+        .auction-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .current-bid {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+        }
+
+        .bid-count {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Upcoming Events */
+        .event-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .event-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .event-creator {
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-size: 0.875rem;
+        }
+
+        .event-badge {
+            background: var(--accent-fire);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .event-description {
+            color: var(--text-primary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .event-time {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Premium Badge */
+        .premium-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-gold), #ffed4e);
+            color: #000;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-dark);
+            color: var(--text-primary);
+        }
+
+        .bid-form {
+            margin-top: 1.5rem;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--accent-fire);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .auction-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-buttons {
+                gap: 0.5rem;
+            }
+
+            .btn {
+                padding: 0.625rem 1rem;
+                font-size: 0.8rem;
+            }
+        }
+
+        /* Status Messages */
+        .status-message {
+            position: fixed;
+            top: 80px;
+            right: 1.5rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+            z-index: 3000;
+            animation: slideIn 0.3s ease-out;
+            max-width: 300px;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .status-success {
+            background: var(--success);
+            color: #000;
+        }
+
+        .status-error {
+            background: var(--accent-fire);
+            color: white;
+        }
+
+        .status-info {
+            background: var(--accent-gold);
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-gradient"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <div class="logo">REELAUCTION</div>
+            <div class="nav-buttons">
+                <div class="user-info" id="userInfo" style="display: none;">
+                    <span class="user-role" id="userRole">CREATOR</span>
+                    <span id="userName">Guest</span>
+                    <span class="balance" id="userBalance">$0</span>
+                </div>
+                <button class="btn btn-ghost" id="logoutBtn" style="display: none;">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Landing Hero -->
+        <section id="landingSection" class="section active">
+            <div class="hero">
+                <h1>
+                    Real Reels.<br>
+                    <span class="gradient-text">Real Time.</span>
+                </h1>
+                <p>The marketplace for authentic moments captured and auctioned instantly.</p>
+                <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                    <button class="btn btn-primary" onclick="showSection('loginSection')">Login</button>
+                    <button class="btn btn-secondary" onclick="showSection('registerSection')">Sign Up</button>
+                </div>
+            </div>
+
+            <div style="max-width: 800px; margin: 4rem auto; text-align: center;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 2rem;">How It Works</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📸</div>
+                        <h3 style="margin-bottom: 0.5rem;">Capture</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Take photos or videos in real-time within the app</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">⏱️</div>
+                        <h3 style="margin-bottom: 0.5rem;">List</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Add a description and list your content instantly</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔥</div>
+                        <h3 style="margin-bottom: 0.5rem;">Auction</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">1-hour live auction starting at $1</p>
+                    </div>
+                    <div>
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
+                        <h3 style="margin-bottom: 0.5rem;">Earn</h3>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">Get 80% of the winning bid</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Login Section -->
+        <section id="loginSection" class="section">
+            <div class="auth-container">
+                <h2>Welcome Back</h2>
+                <p>Login to start creating or bidding</p>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="loginEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+                    <button type="button" class="btn btn-ghost" style="width: 100%;" onclick="showSection('registerSection')">
+                        Need an account? Sign up
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Register Section -->
+        <section id="registerSection" class="section">
+            <div class="auth-container">
+                <h2>Join ReelAuction</h2>
+                <p>Create your account to get started</p>
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label>Full Name</label>
+                        <input type="text" id="regName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="regEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" id="regPassword" required minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>Account Type</label>
+                        <select id="regRole" required>
+                            <option value="creator">Content Creator</option>
+                            <option value="buyer">Content Buyer</option>
+                            <option value="both">Both (Creator & Buyer)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">Create Account</button>
+                    <button type="button" class="btn btn-ghost" style="width: 100%;" onclick="showSection('loginSection')">
+                        Already have an account? Login
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboardSection" class="section">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem;">
+                    Live Auctions
+                </h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="createContentBtn" style="display: none;">
+                        📸 Create Content
+                    </button>
+                    <button class="btn btn-secondary" id="upcomingEventsBtn" style="display: none;">
+                        📅 Post Upcoming Event
+                    </button>
+                    <button class="btn btn-secondary" id="viewEventsBtn">
+                        👀 View Upcoming Events
+                    </button>
+                    <button class="btn btn-secondary" id="upgradeBtn" style="display: none;" onclick="showUpgradeModal()">
+                        ⭐ Upgrade to Premium ($49/year)
+                    </button>
+                </div>
+            </div>
+
+            <div id="auctionsContainer" class="auction-grid">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading live auctions...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Camera Section -->
+        <section id="cameraSection" class="section">
+            <div class="camera-container">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem; text-align: center;">
+                    Create Content
+                </h2>
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">
+                    Capture a photo or video right now to list on auction
+                </p>
+
+                <div class="camera-view">
+                    <video id="videoPreview" autoplay playsinline muted></video>
+                    <img id="capturedMedia" style="display: none;">
+                    <div class="camera-overlay" id="cameraTimer" style="display: none;">00:00</div>
+                </div>
+
+                <div class="camera-controls">
+                    <button class="btn btn-secondary" onclick="switchCamera()">🔄 Switch</button>
+                    <button class="record-btn" id="captureBtn"></button>
+                    <button class="btn btn-secondary" id="mediaTypeBtn" onclick="toggleMediaType()">📷 Photo</button>
+                </div>
+
+                <div id="contentForm" style="display: none;">
+                    <div class="form-group">
+                        <label>Description (Max 160 characters)</label>
+                        <textarea id="contentDescription" maxlength="160" placeholder="Describe what makes this moment valuable..."></textarea>
+                        <div class="char-counter">
+                            <span id="charCount">0</span>/160
+                        </div>
+                    </div>
+                    
+                    <!-- Premium Starting Bid Feature -->
+                    <div class="form-group" id="startingBidGroup" style="display: none;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <label style="margin: 0;">Starting Bid</label>
+                            <div class="premium-badge" style="margin: 0; padding: 0.25rem 0.5rem; font-size: 0.7rem;">⭐ PREMIUM</div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <span style="font-size: 1.25rem; font-weight: 700;">$</span>
+                            <input type="number" id="startingBidInput" min="1" step="1" value="1" 
+                                   style="max-width: 120px; text-align: center; font-size: 1.25rem; font-weight: 700;">
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.5rem;">
+                            Set your minimum starting bid (must be $1 or more)
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem;">
+                        <button class="btn btn-primary" style="flex: 1;" onclick="submitContent()">
+                            List on Auction
+                        </button>
+                        <button class="btn btn-secondary" onclick="resetCamera()">
+                            Retake
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-ghost" style="width: 100%; margin-top: 1rem;" onclick="showSection('dashboardSection')">
+                    ← Back to Auctions
+                </button>
+            </div>
+        </section>
+
+        <!-- Upcoming Events Section -->
+        <section id="eventsSection" class="section">
+            <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem;">
+                    Upcoming Content Events
+                </h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+                    Premium creators announce where they'll be capturing content
+                </p>
+
+                <div id="eventsContainer">
+                    <!-- Sample event -->
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-creator">@NewsHunter</div>
+                                <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                            </div>
+                            <div class="event-badge">UPCOMING</div>
+                        </div>
+                        <div class="event-description">
+                            I'll be covering the tech conference tomorrow morning. Expecting exclusive interviews and product launches.
+                        </div>
+                        <div class="event-time">📅 Tomorrow, 9:00 AM PST • 🌎 San Francisco</div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-creator">@StreetPhotog</div>
+                                <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                            </div>
+                            <div class="event-badge">LIVE NOW</div>
+                        </div>
+                        <div class="event-description">
+                            Currently at the music festival capturing performances. Will post exclusive backstage content throughout the evening.
+                        </div>
+                        <div class="event-time">📅 Today, 6:00 PM PST • 🌎 Los Angeles</div>
+                    </div>
+                </div>
+
+                <button class="btn btn-ghost" style="width: 100%; margin-top: 2rem;" onclick="showSection('dashboardSection')">
+                    ← Back to Auctions
+                </button>
+            </div>
+        </section>
+
+        <!-- Post Event Section -->
+        <section id="postEventSection" class="section">
+            <div class="auth-container">
+                <div class="premium-badge">⭐ PREMIUM FEATURE</div>
+                <h2>Post Upcoming Event</h2>
+                <p>Let buyers know when and where you'll be capturing content</p>
+                <form id="eventForm">
+                    <div class="form-group">
+                        <label>Event Description</label>
+                        <textarea id="eventDescription" maxlength="200" placeholder="Where will you be? What content will you capture?" required></textarea>
+                        <div class="char-counter">
+                            <span id="eventCharCount">0</span>/200
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Date & Time</label>
+                        <input type="datetime-local" id="eventDateTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="eventLocation" placeholder="City, State" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;">
+                        Post Event
+                    </button>
+                    <button type="button" class="btn btn-ghost" style="width: 100%;" onclick="showSection('dashboardSection')">
+                        Cancel
+                    </button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <!-- Auction Detail Modal -->
+    <div id="auctionModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">✕</button>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script>
+        // State Management
+        let currentUser = null;
+        let mediaStream = null;
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let capturedBlob = null;
+        let isRecording = false;
+        let recordingTimer = null;
+        let recordingSeconds = 0;
+        let currentCamera = 'user'; // 'user' or 'environment'
+        let mediaType = 'photo'; // 'photo' or 'video'
+
+        // Mock Data (Replace with real backend)
+        let auctions = [
+            {
+                id: 1,
+                creator: 'NewsHunter',
+                description: 'Breaking: First look at the new city hall construction. Exclusive angle from restricted area.',
+                mediaUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600',
+                mediaType: 'image',
+                currentBid: 47,
+                bidCount: 12,
+                endTime: Date.now() + 2400000, // 40 min from now
+                timestamp: Date.now() - 1200000
+            },
+            {
+                id: 2,
+                creator: 'StreetPhotog',
+                description: 'Rare red Ferrari F40 spotted downtown. Owner agreed to quick photoshoot. Collectors interested?',
+                mediaUrl: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?w=600',
+                mediaType: 'image',
+                currentBid: 23,
+                bidCount: 8,
+                endTime: Date.now() + 1800000, // 30 min from now
+                timestamp: Date.now() - 1800000
+            },
+            {
+                id: 3,
+                creator: 'EventCapture',
+                description: 'Live performance clip from tonight\'s concert. Lead singer\'s surprise acoustic set. 45 seconds.',
+                mediaUrl: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600',
+                mediaType: 'video',
+                currentBid: 89,
+                bidCount: 24,
+                endTime: Date.now() + 3300000, // 55 min from now
+                timestamp: Date.now() - 300000
+            }
+        ];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAuctions();
+            setupEventListeners();
+            startAuctionTimers();
+        });
+
+        function setupEventListeners() {
+            // Forms
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('registerForm').addEventListener('submit', handleRegister);
+            document.getElementById('eventForm').addEventListener('submit', handlePostEvent);
+
+            // Character counters
+            document.getElementById('contentDescription')?.addEventListener('input', (e) => {
+                document.getElementById('charCount').textContent = e.target.value.length;
+            });
+            document.getElementById('eventDescription')?.addEventListener('input', (e) => {
+                document.getElementById('eventCharCount').textContent = e.target.value.length;
+            });
+
+            // Buttons
+            document.getElementById('createContentBtn')?.addEventListener('click', () => {
+                showSection('cameraSection');
+                initCamera();
+                // Show starting bid input for premium users
+                if (currentUser && currentUser.isPremium) {
+                    document.getElementById('startingBidGroup').style.display = 'block';
+                } else {
+                    document.getElementById('startingBidGroup').style.display = 'none';
+                }
+            });
+            document.getElementById('upcomingEventsBtn')?.addEventListener('click', () => {
+                showSection('postEventSection');
+            });
+            document.getElementById('viewEventsBtn')?.addEventListener('click', () => {
+                showSection('eventsSection');
+            });
+            document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
+            document.getElementById('captureBtn')?.addEventListener('click', handleCapture);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+
+            // Mock authentication (replace with real backend)
+            currentUser = {
+                id: 1,
+                name: email.split('@')[0],
+                email: email,
+                role: 'creator',
+                balance: 125.50,
+                isPremium: false
+            };
+
+            updateUserInterface();
+            showSection('dashboardSection');
+            showStatus('Welcome back!', 'success');
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const role = document.getElementById('regRole').value;
+
+            // Mock registration (replace with real backend)
+            currentUser = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                role: role,
+                balance: 0,
+                isPremium: false
+            };
+
+            updateUserInterface();
+            showSection('dashboardSection');
+            showStatus('Account created! Welcome to ReelAuction.', 'success');
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            updateUserInterface();
+            showSection('landingSection');
+            showStatus('Logged out successfully', 'info');
+        }
+
+        function updateUserInterface() {
+            if (currentUser) {
+                document.getElementById('userInfo').style.display = 'flex';
+                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('userName').textContent = currentUser.name;
+                document.getElementById('userBalance').textContent = `$${currentUser.balance.toFixed(2)}`;
+                document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
+
+                // Show role-specific buttons
+                if (currentUser.role === 'creator' || currentUser.role === 'both') {
+                    document.getElementById('createContentBtn').style.display = 'block';
+                    if (currentUser.isPremium) {
+                        document.getElementById('upcomingEventsBtn').style.display = 'block';
+                    } else {
+                        document.getElementById('upgradeBtn').style.display = 'block';
+                    }
+                }
+            } else {
+                document.getElementById('userInfo').style.display = 'none';
+                document.getElementById('logoutBtn').style.display = 'none';
+                document.getElementById('createContentBtn').style.display = 'none';
+                document.getElementById('upcomingEventsBtn').style.display = 'none';
+                document.getElementById('upgradeBtn').style.display = 'none';
+            }
+        }
+
+        function loadAuctions() {
+            const container = document.getElementById('auctionsContainer');
+            
+            if (auctions.length === 0) {
+                container.innerHTML = '<div class="loading"><p>No active auctions right now. Check back soon!</p></div>';
+                return;
+            }
+
+            container.innerHTML = auctions.map(auction => `
+                <div class="auction-card" onclick="openAuctionModal(${auction.id})">
+                    <div class="auction-media">
+                        ${auction.mediaType === 'image' 
+                            ? `<img src="${auction.mediaUrl}" alt="${auction.description}">`
+                            : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
+                        }
+                        <div class="watermark">REELAUCTION</div>
+                        <div class="auction-timer" data-end="${auction.endTime}">--:--</div>
+                        ${auction.isPremiumContent && auction.startingBid > 1 
+                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
+                            : ''
+                        }
+                    </div>
+                    <div class="auction-info">
+                        <div class="auction-description">${auction.description}</div>
+                        <div class="auction-meta">
+                            <div>
+                                <div class="current-bid">$${auction.currentBid}</div>
+                                <div class="bid-count">${auction.bidCount} bids${auction.startingBid > 1 ? ` • Started at $${auction.startingBid}` : ''}</div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
+                                Place Bid
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function startAuctionTimers() {
+            setInterval(() => {
+                document.querySelectorAll('.auction-timer').forEach(timer => {
+                    const endTime = parseInt(timer.dataset.end);
+                    const remaining = Math.max(0, endTime - Date.now());
+                    const minutes = Math.floor(remaining / 60000);
+                    const seconds = Math.floor((remaining % 60000) / 1000);
+                    timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    
+                    if (remaining === 0) {
+                        timer.textContent = 'ENDED';
+                        timer.style.color = 'var(--text-secondary)';
+                    }
+                });
+            }, 1000);
+        }
+
+        function openAuctionModal(auctionId) {
+            const auction = auctions.find(a => a.id === auctionId);
+            if (!auction) return;
+
+            const modal = document.getElementById('auctionModal');
+            const content = document.getElementById('modalContent');
+
+            content.innerHTML = `
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                        Posted by @${auction.creator}
+                    </div>
+                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">
+                        ${auction.description}
+                    </h2>
+                </div>
+
+                <div style="position: relative; margin-bottom: 1.5rem;">
+                    ${auction.mediaType === 'image' 
+                        ? `<img src="${auction.mediaUrl}" style="width: 100%; border-radius: 12px;">`
+                        : `<video src="${auction.mediaUrl}" controls style="width: 100%; border-radius: 12px;"></video>`
+                    }
+                    <div class="watermark">REELAUCTION</div>
+                </div>
+
+                <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Current Bid</div>
+                            <div style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; color: var(--accent-gold);">
+                                $${auction.currentBid}
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Time Left</div>
+                            <div class="auction-timer" data-end="${auction.endTime}" style="position: static; background: none; padding: 0; font-size: 1.25rem; font-weight: 700;"></div>
+                        </div>
+                    </div>
+                    <div style="color: var(--text-secondary); font-size: 0.875rem;">${auction.bidCount} bids • Next bid: $${auction.currentBid + 1}</div>
+                </div>
+
+                ${currentUser ? `
+                    <button class="btn btn-primary" style="width: 100%;" onclick="placeBid(${auction.id}, true)">
+                        Place Bid - $${auction.currentBid + 1}
+                    </button>
+                ` : `
+                    <div style="text-align: center; padding: 1rem; background: var(--bg-dark); border-radius: 12px;">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Login to place a bid</p>
+                        <button class="btn btn-primary" onclick="closeModal(); showSection('loginSection')">
+                            Login
+                        </button>
+                    </div>
+                `}
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('auctionModal').classList.remove('active');
+        }
+
+        function placeBid(auctionId, fromModal = false) {
+            if (!currentUser) {
+                showStatus('Please login to place a bid', 'error');
+                return;
+            }
+
+            const auction = auctions.find(a => a.id === auctionId);
+            if (!auction) return;
+
+            // Mock bid placement
+            auction.currentBid += 1;
+            auction.bidCount += 1;
+
+            loadAuctions();
+            if (fromModal) {
+                closeModal();
+            }
+            showStatus(`Bid placed! You're the highest bidder at $${auction.currentBid}`, 'success');
+        }
+
+        // Camera Functions
+        async function initCamera() {
+            try {
+                if (mediaStream) {
+                    mediaStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: {
+                        facingMode: currentCamera,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 }
+                    },
+                    audio: mediaType === 'video'
+                };
+
+                mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
+                document.getElementById('videoPreview').srcObject = mediaStream;
+                document.getElementById('videoPreview').style.display = 'block';
+                document.getElementById('capturedMedia').style.display = 'none';
+            } catch (error) {
+                console.error('Camera error:', error);
+                showStatus('Camera access denied. Please enable camera permissions.', 'error');
+            }
+        }
+
+        function switchCamera() {
+            currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+            initCamera();
+        }
+
+        function toggleMediaType() {
+            mediaType = mediaType === 'photo' ? 'video' : 'photo';
+            document.getElementById('mediaTypeBtn').innerHTML = mediaType === 'photo' ? '📷 Photo' : '🎥 Video';
+            initCamera();
+        }
+
+        async function handleCapture() {
+            const btn = document.getElementById('captureBtn');
+
+            if (mediaType === 'photo') {
+                // Capture photo
+                const video = document.getElementById('videoPreview');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+
+                canvas.toBlob(blob => {
+                    capturedBlob = blob;
+                    const url = URL.createObjectURL(blob);
+                    document.getElementById('capturedMedia').src = url;
+                    document.getElementById('capturedMedia').style.display = 'block';
+                    document.getElementById('videoPreview').style.display = 'none';
+                    document.getElementById('contentForm').style.display = 'block';
+                    
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                    }
+                }, 'image/jpeg', 0.95);
+
+            } else if (!isRecording) {
+                // Start recording video
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(mediaStream, {
+                    mimeType: 'video/webm;codecs=vp9'
+                });
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) {
+                        recordedChunks.push(e.data);
+                    }
+                };
+
+                mediaRecorder.onstop = () => {
+                    capturedBlob = new Blob(recordedChunks, { type: 'video/webm' });
+                    const url = URL.createObjectURL(capturedBlob);
+                    document.getElementById('capturedMedia').src = url;
+                    document.getElementById('capturedMedia').style.display = 'block';
+                    document.getElementById('videoPreview').style.display = 'none';
+                    document.getElementById('contentForm').style.display = 'block';
+                    
+                    if (mediaStream) {
+                        mediaStream.getTracks().forEach(track => track.stop());
+                    }
+                };
+
+                mediaRecorder.start();
+                isRecording = true;
+                btn.classList.add('recording');
+                document.getElementById('cameraTimer').style.display = 'block';
+
+                recordingSeconds = 0;
+                recordingTimer = setInterval(() => {
+                    recordingSeconds++;
+                    const mins = Math.floor(recordingSeconds / 60);
+                    const secs = recordingSeconds % 60;
+                    document.getElementById('cameraTimer').textContent = 
+                        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+                    if (recordingSeconds >= 60) {
+                        handleCapture(); // Stop at 60 seconds
+                    }
+                }, 1000);
+
+            } else {
+                // Stop recording
+                isRecording = false;
+                btn.classList.remove('recording');
+                clearInterval(recordingTimer);
+                document.getElementById('cameraTimer').style.display = 'none';
+                mediaRecorder.stop();
+            }
+        }
+
+        function resetCamera() {
+            document.getElementById('contentForm').style.display = 'none';
+            document.getElementById('contentDescription').value = '';
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('startingBidInput').value = '1';
+            capturedBlob = null;
+            initCamera();
+        }
+
+        function submitContent() {
+            if (!capturedBlob) {
+                showStatus('Please capture content first', 'error');
+                return;
+            }
+
+            const description = document.getElementById('contentDescription').value.trim();
+            if (!description) {
+                showStatus('Please add a description', 'error');
+                return;
+            }
+
+            // Get starting bid (premium users can set custom, others default to $1)
+            let startingBid = 1;
+            if (currentUser.isPremium) {
+                const customBid = parseInt(document.getElementById('startingBidInput').value);
+                if (customBid && customBid >= 1) {
+                    startingBid = customBid;
+                } else {
+                    showStatus('Starting bid must be $1 or more', 'error');
+                    return;
+                }
+            }
+
+            // Mock content submission (replace with real upload to backend)
+            const newAuction = {
+                id: Date.now(),
+                creator: currentUser.name,
+                description: description,
+                mediaUrl: URL.createObjectURL(capturedBlob),
+                mediaType: mediaType === 'photo' ? 'image' : 'video',
+                currentBid: startingBid,
+                startingBid: startingBid, // Track original starting bid
+                bidCount: 0,
+                endTime: Date.now() + 3600000, // 1 hour from now
+                timestamp: Date.now(),
+                isPremiumContent: currentUser.isPremium
+            };
+
+            auctions.unshift(newAuction);
+            
+            showSection('dashboardSection');
+            loadAuctions();
+            
+            if (currentUser.isPremium && startingBid > 1) {
+                showStatus(`Content listed with $${startingBid} starting bid!`, 'success');
+            } else {
+                showStatus('Content listed successfully! Auction starts now.', 'success');
+            }
+            
+            resetCamera();
+        }
+
+        function handlePostEvent(e) {
+            e.preventDefault();
+            
+            if (!currentUser.isPremium) {
+                showStatus('Premium membership required to post events', 'error');
+                return;
+            }
+
+            // Mock event posting
+            showSection('eventsSection');
+            showStatus('Event posted successfully!', 'success');
+            e.target.reset();
+        }
+
+        function showUpgradeModal() {
+            const modal = document.getElementById('auctionModal');
+            const content = document.getElementById('modalContent');
+
+            content.innerHTML = `
+                <div style="text-align: center; padding: 1rem 0;">
+                    <div class="premium-badge" style="display: inline-flex; font-size: 1rem; padding: 0.75rem 1.5rem; margin-bottom: 1.5rem;">
+                        ⭐ PREMIUM CREATOR
+                    </div>
+                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem;">
+                        Unlock Premium Features
+                    </h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 2rem; font-size: 1.1rem;">
+                        Only $49/year
+                    </p>
+                </div>
+
+                <div style="background: var(--bg-dark); padding: 2rem; border-radius: 12px; margin-bottom: 2rem;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                            <div style="font-size: 2rem;">📅</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 1.1rem;">Post Upcoming Events</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">Announce where you'll be capturing content to build anticipation</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 2rem;">💰</div>
+                            <div>
+                                <div style="font-weight: 700; font-size: 1.1rem;">Custom Starting Bids</div>
+                                <div style="color: var(--text-secondary); font-size: 0.9rem;">Set your own minimum starting bid ($2, $5, $10, or more)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border-left: 4px solid var(--accent-gold);">
+                    <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.5rem;">Premium creators earn more:</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-gold);">
+                        Set higher minimums = Higher payouts
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="handleUpgrade()">
+                    Upgrade Now - $49/year
+                </button>
+                <button class="btn btn-ghost" style="width: 100%;" onclick="closeModal()">
+                    Maybe Later
+                </button>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function handleUpgrade() {
+            // Mock upgrade (in production, this would use Stripe Checkout)
+            currentUser.isPremium = true;
+            updateUserInterface();
+            closeModal();
+            showStatus('Welcome to Premium! You can now set custom starting bids and post events.', 'success');
+        }
+
+        function showStatus(message, type) {
+            const existing = document.querySelector('.status-message');
+            if (existing) existing.remove();
+
+            const status = document.createElement('div');
+            status.className = `status-message status-${type}`;
+            status.textContent = message;
+            document.body.appendChild(status);
+
+            setTimeout(() => status.remove(), 4000);
+        }
+
+        // Close modal on background click
+        document.getElementById('auctionModal').addEventListener('click', (e) => {
+            if (e.target.id === 'auctionModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
