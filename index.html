@@ -38,6 +38,13 @@
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
+        
+        html {
+            overflow-x: hidden;
+            width: 100%;
         }
 
         /* Animated Background */
@@ -67,7 +74,7 @@
             background: rgba(10, 10, 10, 0.95);
             backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border);
-            padding: 1rem 1.5rem;
+            padding: 1rem;
         }
 
         .header-content {
@@ -76,36 +83,108 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         .logo {
             font-family: 'Archivo Black', sans-serif;
-            font-size: 1.5rem;
+            font-size: 1.25rem;
             letter-spacing: -0.5px;
             background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            cursor: pointer;
         }
 
         .nav-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 0.75rem;
             align-items: center;
+        }
+        
+        .hamburger-menu {
+            background: var(--bg-card);
+            border: 2px solid var(--accent-fire);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            width: 40px;
+            height: 40px;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .hamburger-menu span {
+            width: 20px;
+            height: 2px;
+            background: var(--accent-fire);
+            transition: all 0.3s;
+        }
+        
+        .mobile-nav {
+            position: fixed;
+            top: 70px;
+            right: -100%;
+            width: 280px;
+            max-width: 90vw;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: right 0.3s ease-out;
+            z-index: 999;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .mobile-nav.active {
+            right: 1rem;
+        }
+        
+        .mobile-nav-item {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-align: left;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .mobile-nav-item:hover {
+            border-color: var(--accent-fire);
+            background: var(--bg-card);
+        }
+        
+        .mobile-nav-item.premium {
+            background: linear-gradient(135deg, var(--accent-gold), #ffed4e);
+            color: #000;
+            border-color: var(--accent-gold);
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.5rem 1rem;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
             background: var(--bg-card);
             border-radius: 100px;
-            border: 1px solid var(--border);
+            border: 2px solid var(--accent-fire);
+            font-size: 0.85rem;
         }
 
         .user-role {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: var(--accent-gold);
@@ -115,17 +194,18 @@
         .balance {
             font-weight: 700;
             color: var(--success);
+            font-size: 0.85rem;
         }
 
         /* Buttons */
         .btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 1.5rem;
             border: none;
             border-radius: 8px;
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 0.9rem;
+            font-size: 1rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
@@ -133,32 +213,37 @@
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-fire), #ff6b3d);
             color: white;
-            box-shadow: 0 4px 20px rgba(255, 61, 0, 0.3);
+            box-shadow: 0 4px 20px rgba(255, 61, 0, 0.4);
+            border: 2px solid var(--accent-fire);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(255, 61, 0, 0.5);
+            box-shadow: 0 6px 30px rgba(255, 61, 0, 0.6);
         }
 
         .btn-secondary {
             background: var(--bg-card);
             color: var(--text-primary);
-            border: 1px solid var(--border);
+            border: 2px solid var(--accent-fire);
         }
 
         .btn-secondary:hover {
             border-color: var(--accent-gold);
+            background: var(--bg-dark);
         }
 
         .btn-ghost {
             background: transparent;
-            color: var(--text-secondary);
-            padding: 0.5rem 1rem;
+            color: var(--accent-fire);
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--accent-fire);
+            font-weight: 700;
         }
 
         .btn-ghost:hover {
-            color: var(--text-primary);
+            background: var(--accent-fire);
+            color: white;
         }
 
         /* Main Container */
@@ -167,7 +252,9 @@
             z-index: 1;
             max-width: 1400px;
             margin: 0 auto;
-            padding: 2rem 1.5rem;
+            padding: 2rem 1rem;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         /* Hero Section */
@@ -265,7 +352,7 @@
             width: 100%;
             padding: 0.875rem;
             background: var(--bg-dark);
-            border: 1px solid var(--border);
+            border: 2px solid var(--accent-fire);
             border-radius: 8px;
             color: var(--text-primary);
             font-size: 1rem;
@@ -277,7 +364,8 @@
         .form-group select:focus,
         .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent-fire);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.2);
         }
 
         .form-group textarea {
@@ -303,8 +391,9 @@
             background: var(--bg-card);
             border-radius: 16px;
             overflow: hidden;
-            border: 2px solid var(--border);
+            border: 3px solid var(--accent-fire);
             margin-bottom: 2rem;
+            touch-action: pinch-zoom;
         }
 
         #videoPreview,
@@ -312,36 +401,49 @@
             width: 100%;
             display: block;
             background: #000;
+            touch-action: pinch-zoom;
         }
 
         .camera-overlay {
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(255, 61, 0, 0.9);
             padding: 0.5rem 1rem;
             border-radius: 8px;
             font-size: 0.875rem;
             font-weight: 700;
-            color: var(--accent-fire);
+            color: white;
+            pointer-events: none;
         }
 
         .camera-controls {
             display: flex;
             gap: 1rem;
             justify-content: center;
+            align-items: center;
             margin-bottom: 2rem;
+            padding: 1rem;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .camera-controls button {
+            flex-shrink: 0;
         }
 
         .record-btn {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
             border: 4px solid var(--accent-fire);
             background: transparent;
             cursor: pointer;
             position: relative;
             transition: all 0.3s;
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
         }
 
         .record-btn:hover {
@@ -353,8 +455,14 @@
         }
 
         @keyframes recordPulse {
-            0%, 100% { border-color: var(--accent-fire); }
-            50% { border-color: var(--accent-gold); }
+            0%, 100% { 
+                border-color: var(--accent-fire);
+                box-shadow: 0 4px 15px rgba(255, 61, 0, 0.4);
+            }
+            50% { 
+                border-color: var(--accent-gold);
+                box-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);
+            }
         }
 
         .record-btn::after {
@@ -371,6 +479,31 @@
 
         .record-btn.recording::after {
             border-radius: 8px;
+            animation: pulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        
+        .camera-switch-btn,
+        .media-type-btn {
+            padding: 0.75rem 1.25rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-fire);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        
+        .camera-switch-btn:active,
+        .media-type-btn:active {
+            background: var(--accent-fire);
+            color: white;
         }
 
         /* Auction Grid */
@@ -530,49 +663,77 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.95);
             z-index: 2000;
-            padding: 2rem;
+            padding: 1rem;
             overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .modal.active {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
         }
 
         .modal-content {
             background: var(--bg-card);
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             border-radius: 16px;
-            padding: 2rem;
+            padding: 2rem 1.5rem;
             max-width: 600px;
             width: 100%;
             position: relative;
+            margin: auto;
         }
 
         .modal-close {
             position: absolute;
             top: 1rem;
             right: 1rem;
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-fire);
+            color: var(--accent-fire);
             font-size: 1.5rem;
             cursor: pointer;
-            width: 40px;
-            height: 40px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             transition: all 0.3s;
+            font-weight: 700;
+            z-index: 10;
         }
 
         .modal-close:hover {
-            background: var(--bg-dark);
-            color: var(--text-primary);
+            background: var(--accent-fire);
+            color: white;
+        }
+        
+        .modal-media-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+            border-radius: 12px;
+            overflow: hidden;
+            max-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+        }
+        
+        .modal-media-container img,
+        .modal-media-container video {
+            max-width: 100%;
+            max-height: 60vh;
+            width: auto;
+            height: auto;
+            display: block;
+            margin: 0 auto;
         }
 
         .bid-form {
@@ -616,9 +777,95 @@
             }
 
             .btn {
-                padding: 0.625rem 1rem;
-                font-size: 0.8rem;
+                padding: 0.75rem 1.25rem;
+                font-size: 0.9rem;
             }
+            
+            .user-info {
+                font-size: 0.75rem;
+            }
+            
+            .balance {
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* User Dashboard */
+        .dashboard-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+        
+        .dashboard-tab {
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+        
+        .dashboard-tab.active {
+            background: var(--accent-fire);
+            color: white;
+            border-color: var(--accent-fire);
+        }
+        
+        .dashboard-content {
+            display: none;
+        }
+        
+        .dashboard-content.active {
+            display: block;
+        }
+        
+        .listing-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .listing-card:hover {
+            border-color: var(--accent-fire);
+        }
+        
+        .listing-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .listing-status {
+            padding: 0.375rem 0.875rem;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        
+        .listing-status.active {
+            background: var(--success);
+            color: #000;
+        }
+        
+        .listing-status.ended {
+            background: var(--text-secondary);
+            color: #000;
+        }
+        
+        .listing-status.sold {
+            background: var(--accent-gold);
+            color: #000;
         }
 
         /* Status Messages */
@@ -667,17 +914,46 @@
     <!-- Header -->
     <header>
         <div class="header-content">
-            <div class="logo">REELAUCTION</div>
+            <div class="logo" onclick="showSection('dashboardSection')">REELAUCTION</div>
             <div class="nav-buttons">
                 <div class="user-info" id="userInfo" style="display: none;">
                     <span class="user-role" id="userRole">CREATOR</span>
                     <span id="userName">Guest</span>
                     <span class="balance" id="userBalance">$0</span>
                 </div>
-                <button class="btn btn-ghost" id="logoutBtn" style="display: none;">Logout</button>
+                <div class="hamburger-menu" id="hamburgerBtn" style="display: none;" onclick="toggleMobileNav()">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         </div>
     </header>
+
+    <!-- Mobile Navigation Menu -->
+    <div class="mobile-nav" id="mobileNav">
+        <button class="mobile-nav-item" onclick="showSection('userDashboardSection'); toggleMobileNav()">
+            📊 My Dashboard
+        </button>
+        <button class="mobile-nav-item" onclick="showSection('dashboardSection'); toggleMobileNav()">
+            🔥 Live Auctions
+        </button>
+        <button class="mobile-nav-item" id="navCreateContent" style="display: none;" onclick="showSection('cameraSection'); initCamera(); toggleMobileNav()">
+            📸 Create Content
+        </button>
+        <button class="mobile-nav-item" onclick="showSection('eventsSection'); toggleMobileNav()">
+            📅 Upcoming Events
+        </button>
+        <button class="mobile-nav-item" id="navPostEvent" style="display: none;" onclick="showSection('postEventSection'); toggleMobileNav()">
+            ➕ Post Event
+        </button>
+        <button class="mobile-nav-item premium" id="navUpgrade" style="display: none;" onclick="showUpgradeModal(); toggleMobileNav()">
+            ⭐ Upgrade Premium
+        </button>
+        <button class="mobile-nav-item" style="border-color: var(--accent-fire); color: var(--accent-fire);" onclick="handleLogout(); toggleMobileNav()">
+            🚪 Logout
+        </button>
+    </div>
 
     <div class="container">
         <!-- Landing Hero -->
@@ -780,22 +1056,20 @@
         <!-- Dashboard Section -->
         <section id="dashboardSection" class="section">
             <div style="margin-bottom: 2rem;">
-                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1.5rem;">
                     Live Auctions
                 </h2>
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                    <button class="btn btn-primary" id="createContentBtn" style="display: none;">
-                        📸 Create Content
-                    </button>
-                    <button class="btn btn-secondary" id="upcomingEventsBtn" style="display: none;">
-                        📅 Post Upcoming Event
-                    </button>
-                    <button class="btn btn-secondary" id="viewEventsBtn">
-                        👀 View Upcoming Events
-                    </button>
-                    <button class="btn btn-secondary" id="upgradeBtn" style="display: none;" onclick="showUpgradeModal()">
-                        ⭐ Upgrade to Premium ($49/year)
-                    </button>
+                
+                <!-- Quick Actions for logged-in creators -->
+                <div id="creatorQuickActions" style="display: none; margin-bottom: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                        <button class="btn btn-primary" onclick="showSection('cameraSection'); initCamera(); if(currentUser && currentUser.isPremium) document.getElementById('startingBidGroup').style.display = 'block'; else document.getElementById('startingBidGroup').style.display = 'none';">
+                            📸 Create Content
+                        </button>
+                        <button class="btn btn-secondary" onclick="showSection('userDashboardSection')">
+                            📊 My Dashboard
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -804,6 +1078,85 @@
                     <div class="spinner"></div>
                     <p>Loading live auctions...</p>
                 </div>
+            </div>
+        </section>
+
+        <!-- User Dashboard Section -->
+        <section id="userDashboardSection" class="section">
+            <div style="max-width: 900px; margin: 0 auto;">
+                <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1.5rem;">
+                    My Dashboard
+                </h2>
+
+                <div class="dashboard-tabs">
+                    <button class="dashboard-tab active" onclick="switchDashboardTab('myListings')">
+                        My Listings
+                    </button>
+                    <button class="dashboard-tab" onclick="switchDashboardTab('myBids')">
+                        My Bids
+                    </button>
+                    <button class="dashboard-tab" onclick="switchDashboardTab('myPurchases')">
+                        Purchased Content
+                    </button>
+                    <button class="dashboard-tab" id="premiumTab" style="display: none;" onclick="switchDashboardTab('premiumFeatures')">
+                        ⭐ Premium
+                    </button>
+                </div>
+
+                <!-- My Listings Tab -->
+                <div class="dashboard-content active" id="myListingsContent">
+                    <div id="userListingsContainer">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            You haven't created any content yet. Start capturing!
+                        </p>
+                    </div>
+                </div>
+
+                <!-- My Bids Tab -->
+                <div class="dashboard-content" id="myBidsContent">
+                    <div id="userBidsContainer">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            You haven't placed any bids yet.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Purchased Content Tab -->
+                <div class="dashboard-content" id="myPurchasesContent">
+                    <div id="userPurchasesContainer">
+                        <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">
+                            You haven't won any auctions yet.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Premium Features Tab -->
+                <div class="dashboard-content" id="premiumFeaturesContent">
+                    <div style="background: var(--bg-card); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 2rem; text-align: center;">
+                        <div class="premium-badge" style="display: inline-flex; margin-bottom: 1rem; font-size: 1.1rem;">
+                            ⭐ PREMIUM ACTIVE
+                        </div>
+                        <h3 style="margin-bottom: 1rem;">Premium Features Unlocked</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Membership expires: <span id="premiumExpiry">Dec 31, 2026</span>
+                        </p>
+                        <div style="display: grid; gap: 1rem; text-align: left;">
+                            <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px;">
+                                ✅ Post upcoming event announcements
+                            </div>
+                            <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px;">
+                                ✅ Set custom starting bids on your content
+                            </div>
+                            <div style="padding: 1rem; background: var(--bg-dark); border-radius: 8px;">
+                                ✅ Premium badge on your listings
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-ghost" style="width: 100%; margin-top: 2rem;" onclick="showSection('dashboardSection')">
+                    ← Back to Live Auctions
+                </button>
             </div>
         </section>
 
@@ -817,16 +1170,21 @@
                     Capture a photo or video right now to list on auction
                 </p>
 
+                <!-- Camera View (Isolated for pinch-zoom) -->
                 <div class="camera-view">
                     <video id="videoPreview" autoplay playsinline muted></video>
                     <img id="capturedMedia" style="display: none;">
                     <div class="camera-overlay" id="cameraTimer" style="display: none;">00:00</div>
+                    <div id="captureSuccessMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 255, 136, 0.95); color: #000; padding: 1.5rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-align: center;">
+                        ✓ Content Captured!
+                    </div>
                 </div>
 
+                <!-- Camera Controls (Separate from zoom area) -->
                 <div class="camera-controls">
-                    <button class="btn btn-secondary" onclick="switchCamera()">🔄 Switch</button>
+                    <button class="camera-switch-btn" onclick="switchCamera()">🔄</button>
                     <button class="record-btn" id="captureBtn"></button>
-                    <button class="btn btn-secondary" id="mediaTypeBtn" onclick="toggleMediaType()">📷 Photo</button>
+                    <button class="media-type-btn" id="mediaTypeBtn" onclick="toggleMediaType()">📷</button>
                 </div>
 
                 <div id="contentForm" style="display: none;">
@@ -864,7 +1222,7 @@
                     </div>
                 </div>
 
-                <button class="btn btn-ghost" style="width: 100%; margin-top: 1rem;" onclick="showSection('dashboardSection')">
+                <button class="btn btn-ghost" style="width: 100%; margin-top: 1.5rem;" onclick="showSection('dashboardSection')">
                     ← Back to Auctions
                 </button>
             </div>
@@ -970,6 +1328,13 @@
         let recordingSeconds = 0;
         let currentCamera = 'user'; // 'user' or 'environment'
         let mediaType = 'photo'; // 'photo' or 'video'
+        let userBids = []; // Track user's bids
+        let activeDashboardTab = 'myListings';
+
+        // Audio feedback
+        const captureSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDUIFmm98OScTgwOUKvm87FdFwlFnd7wvmEcBS1+zO/biS8IGWu58+SaTBELUrDn9LJeFgpFnN/xwGIdBTSAy+3ciSYII2y589+UTREKUbDk9LRZFQpGm+Dxvl0bBzN9y+7biSgHI2y589+URhIKUa/k9LdYFAtFm9/xwF4bCDR8yezfiSMHJG268t6URBMJUq/l9LdYEwlGnN/xwWAbCTN8ye3biB8GJW+68t2RQxIJUq7m9LlXEwtGnN/xwWAdCTN7ye3bhx0GJ2+88tyQQhIIUq3m9LpWEwpGnt/xwl8dCDN7yO3bhBwGKXC98tuNQBIIUq3m9LxWEQpGnt/xxGAdBzN6x+3agxsGKnG+9dqLPRAHUqzn9L5WEQlEnODxxWIcBzN5xu3ZgRoGK3G/9dmJOw8GUqvm9MBVEAlEnODxyGMcBjJ5xe3ZgBkGLHHB9tiIOQ4FUarm9MJUDwhEneDxymQcBjJ4xOzYfhgGLXHD9deHNg0FUajm9MRUDQdDneDxzGUcBTF4w+zYfRYGLnHE9daGMwwEUKjl9MZUDAdDnuHx0GYcBDB3w+vXfBUGMHHF9dWEMQsFT6fk9MhTCwZCnuHx0WgcAy94wuvXehQFMXLG9dSCLgoFTqfk9cpTCgVBneLx1GobAy53wOrWeBMFM3LI9dOAKQkFTaXj9M1SCQVBneLx1m0bAix2v+rVdRIFNXPJ9dJ+JwgFTKTi9NBRBwQ/nOPx2G4aASp1vunUcxEFN3TK9dF8JQcES6Ph9NJRBgQ+m+Tx2nAaASl0venTcg8EOXXL9dB6IwYESaPh9NRQBgM9muPx3HIaACh0vOjSbw4EOXbM9c94IQUDSKLg9NZPBgI8mePx33MZACd0u+fSbQwDO3fN9c13HwQDR6Hf9NhPBQE6mOLx4XUZACVzuubRagsEPHjO9cx1HQMCSKDe9NpOBQA5l+Hx5HYZACRyueXRaAkDPnnP9ct0GwMCRp/d9NxOBQA3leDx5ngZACNxuOTQZQgEQHrQ9cp0GgICRZ7d9N5NBQA2lN/x6HkZACJwt+PQYwcEQnvR9clyGAEBRJ3c9OBNBAA0k97x6noY//9vtuLPYQYDRHzS9shxFgEBQpvb9OJNBP8zkt7x7HsY//5uu+HPXwQDRn7T9sdwFAAAQZra8+RMAwAykdzy7nwY//5tu+DPXQIDSIDo');
+        const recordStartSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDUIFmm98OScTgwOUKvm87FdFwlFnd7wvmEcBS1+zO/biS8IGWu58+SaTBELUrDn9LJeFgpFnN/xwGIdBTSAy+3ciSYII2y589+UTREKUbDk9LRZFQpGm+Dxvl0bBzN9y+7biSgHI2y589+URhIKUa/k9LdYFAtFm9/xwF4bCDR8yezfiSMHJG268t6URBMJUq/l9LdYEwlGnN/xwWAbCTN8ye3biB8GJW+68t2RQxIJUq7m9LlXEwtGnN/xwWAdCTN7ye3bhx0GJ2+88tyQQhIIUq3m9LpWEwpGnt/xwl8dCDN7yO3bhBwGKXC98tuNQBIIUq3m9LxWEQpGnt/xxGAdBzN6x+3agxsGKnG+9dqLPRAHUqzn9L5WEQlEnODxxWIcBzN5xu3ZgRoGK3G/9dmJOw8GUqvm9MBVEAlEnODxyGMcBjJ5xe3ZgBkGLHHB9tiIOQ4FUarm9MJUDwhEneDxymQcBjJ4xOzYfhgGLXHD9deHNg0FUajm9MRUDQdDneDxzGUcBTF4w+zYfRYGLnHE9daGMwwEUKjl9MZUDAdDnuHx0GYcBDB3w+vXfBUGMHHF9dWEMQsFT6fk9MhTCwZCnuHx0WgcAy94wuvXehQFMXLG9dSCLgoFTqfk9cpTCgVBneLx1GobAy53wOrWeBMFM3LI9dOAKQkFTaXj9M1SCQVBneLx1m0bAix2v+rVdRIFNXPJ9dJ+JwgFTKTi9NBRBwQ/nOPx2G4aASp1vunUcxEFN3TK9dF8JQcES6Ph9NJRBgQ+m+Tx2nAaASl0venTcg8EOXXL9dB6IwYESaPh9NRQBgM9muPx3HIaACh0vOjSbw4EOXbM9c94IQUDSKLg9NZPBgI8mePx33MZACd0u+fSbQwDO3fN9c13HwQDR6Hf9NhPBQE6mOLx4XUZACVzuubRagsEPHjO9cx1HQMCSKDe9NpOBQA5l+Hx5HYZACRyueXRaAkDPnnP9ct0GwMCRp/d9NxOBQA3leDx5ngZACNxuOTQZQgEQHrQ9cp0GgICRZ7d9N5NBQA2lN/x6HkZACJwt+PQYwcEQnvR9clyGAEBRJ3c9OBNBAA0k97x6noY//9vtuLPYQYDRHzS9shxFgEBQpvb9OJNBP8zkt7x7HsY//5uu+HPXwQDRn7T9sdwFAAAQZra8+RMAwAykdzy7nwY//5tu+DPXQIDSIDo');
+        const recordStopSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDUIFmm98OScTgwOUKvm87FdFwlFnd7wvmEcBS1+zO/biS8IGWu58+SaTBELUrDn9LJeFgpFnN/xwGIdBTSAy+3ciSYII2y589+UTREKUbDk9LRZFQpGm+Dxvl0bBzN9y+7biSgHI2y589+URhIKUa/k9LdYFAtFm9/xwF4bCDR8yezfiSMHJG268t6URBMJUq/l9LdYEwlGnN/xwWAbCTN8ye3biB8GJW+68t2RQxIJUq7m9LlXEwtGnN/xwWAdCTN7ye3bhx0GJ2+88tyQQhIIUq3m9LpWEwpGnt/xwl8dCDN7yO3bhBwGKXC98tuNQBIIUq3m9LxWEQpGnt/xxGAdBzN6x+3agxsGKnG+9dqLPRAHUqzn9L5WEQlEnODxxWIcBzN5xu3ZgRoGK3G/9dmJOw8GUqvm9MBVEAlEnODxyGMcBjJ5xe3ZgBkGLHHB9tiIOQ4FUarm9MJUDwhEneDxymQcBjJ4xOzYfhgGLXHD9deHNg0FUajm9MRUDQdDneDxzGUcBTF4w+zYfRYGLnHE9daGMwwEUKjl9MZUDAdDnuHx0GYcBDB3w+vXfBUGMHHF9dWEMQsFT6fk9MhTCwZCnuHx0WgcAy94wuvXehQFMXLG9dSCLgoFTqfk9cpTCgVBneLx1GobAy53wOrWeBMFM3LI9dOAKQkFTaXj9M1SCQVBneLx1m0bAix2v+rVdRIFNXPJ9dJ+JwgFTKTi9NBRBwQ/nOPx2G4aASp1vunUcxEFN3TK9dF8JQcES6Ph9NJRBgQ+m+Tx2nAaASl0venTcg8EOXXL9dB6IwYESaPh9NRQBgM9muPx3HIaACh0vOjSbw4EOXbM9c94IQUDSKLg9NZPBgI8mePx33MZACd0u+fSbQwDO3fN9c13HwQDR6Hf9NhPBQE6mOLx4XUZACVzuubRagsEPHjO9cx1HQMCSKDe9NpOBQA5l+Hx5HYZACRyueXRaAkDPnnP9ct0GwMCRp/d9NxOBQA3leDx5ngZACNxuOTQZQgEQHrQ9cp0GgICRZ7d9N5NBQA2lN/x6HkZACJwt+PQYwcEQnvR9clyGAEBRJ3c9OBNBAA0k97x6noY//9vtuLPYQYDRHzS9shxFgEBQpvb9OJNBP8zkt7x7HsY//5uu+HPXwQDRn7T9sdwFAAAQZra8+RMAwAykdzy7nwY//5tu+DPXQIDSIDo');
 
         // Mock Data (Replace with real backend)
         let auctions = [
@@ -998,7 +1363,7 @@
             {
                 id: 3,
                 creator: 'EventCapture',
-                description: 'Live performance clip from tonight\'s concert. Lead singer\'s surprise acoustic set. 45 seconds.',
+                description: 'Live performance clip from tonight concert. Lead singer surprise acoustic set. 45 seconds.',
                 mediaUrl: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=600',
                 mediaType: 'video',
                 currentBid: 89,
@@ -1029,30 +1394,99 @@
                 document.getElementById('eventCharCount').textContent = e.target.value.length;
             });
 
-            // Buttons
-            document.getElementById('createContentBtn')?.addEventListener('click', () => {
-                showSection('cameraSection');
-                initCamera();
-                // Show starting bid input for premium users
-                if (currentUser && currentUser.isPremium) {
-                    document.getElementById('startingBidGroup').style.display = 'block';
-                } else {
-                    document.getElementById('startingBidGroup').style.display = 'none';
+            // Capture button
+            document.getElementById('captureBtn')?.addEventListener('click', handleCapture);
+            
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const mobileNav = document.getElementById('mobileNav');
+                const hamburger = document.getElementById('hamburgerBtn');
+                if (mobileNav.classList.contains('active') && 
+                    !mobileNav.contains(e.target) && 
+                    !hamburger.contains(e.target)) {
+                    mobileNav.classList.remove('active');
                 }
             });
-            document.getElementById('upcomingEventsBtn')?.addEventListener('click', () => {
-                showSection('postEventSection');
-            });
-            document.getElementById('viewEventsBtn')?.addEventListener('click', () => {
-                showSection('eventsSection');
-            });
-            document.getElementById('logoutBtn')?.addEventListener('click', handleLogout);
-            document.getElementById('captureBtn')?.addEventListener('click', handleCapture);
         }
 
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
+            
+            // Close mobile nav when navigating
+            document.getElementById('mobileNav').classList.remove('active');
+        }
+        
+        function toggleMobileNav() {
+            document.getElementById('mobileNav').classList.toggle('active');
+        }
+        
+        function switchDashboardTab(tabName) {
+            // Update active tab
+            activeDashboardTab = tabName;
+            document.querySelectorAll('.dashboard-tab').forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Show corresponding content
+            document.querySelectorAll('.dashboard-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(tabName + 'Content').classList.add('active');
+            
+            // Load content for the tab
+            loadDashboardContent(tabName);
+        }
+        
+        function loadDashboardContent(tabName) {
+            if (!currentUser) return;
+            
+            if (tabName === 'myListings') {
+                const userListings = auctions.filter(a => a.creator === currentUser.name);
+                const container = document.getElementById('userListingsContainer');
+                
+                if (userListings.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">You have not created any content yet. Start capturing!</p>';
+                } else {
+                    container.innerHTML = userListings.map(auction => `
+                        <div class="listing-card">
+                            <div class="listing-header">
+                                <div>
+                                    <div style="font-weight: 700; margin-bottom: 0.5rem;">${auction.description}</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                        Current bid: <span style="color: var(--accent-gold); font-weight: 700;">$${auction.currentBid}</span> 
+                                        • ${auction.bidCount} bids
+                                    </div>
+                                </div>
+                                <div class="listing-status ${auction.endTime > Date.now() ? 'active' : 'ended'}">
+                                    ${auction.endTime > Date.now() ? 'ACTIVE' : 'ENDED'}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else if (tabName === 'myBids') {
+                const container = document.getElementById('userBidsContainer');
+                const userBidAuctions = auctions.filter(a => userBids.includes(a.id));
+                
+                if (userBidAuctions.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">You have not placed any bids yet.</p>';
+                } else {
+                    container.innerHTML = userBidAuctions.map(auction => `
+                        <div class="listing-card" onclick="openAuctionModal(${auction.id})">
+                            <div class="listing-header">
+                                <div>
+                                    <div style="font-weight: 700; margin-bottom: 0.5rem;">${auction.description}</div>
+                                    <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                                        Current bid: <span style="color: var(--accent-gold); font-weight: 700;">$${auction.currentBid}</span>
+                                        ${auction.currentBidderId === currentUser.id ? ' • <span style="color: var(--success);">You are winning!</span>' : ''}
+                                    </div>
+                                </div>
+                                <div class="listing-status ${auction.endTime > Date.now() ? 'active' : 'ended'}">
+                                    ${auction.endTime > Date.now() ? 'ACTIVE' : 'ENDED'}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
         }
 
         function handleLogin(e) {
@@ -1106,26 +1540,36 @@
         function updateUserInterface() {
             if (currentUser) {
                 document.getElementById('userInfo').style.display = 'flex';
-                document.getElementById('logoutBtn').style.display = 'block';
+                document.getElementById('hamburgerBtn').style.display = 'flex';
                 document.getElementById('userName').textContent = currentUser.name;
                 document.getElementById('userBalance').textContent = `$${currentUser.balance.toFixed(2)}`;
                 document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
 
-                // Show role-specific buttons
+                // Show menu items based on role
                 if (currentUser.role === 'creator' || currentUser.role === 'both') {
-                    document.getElementById('createContentBtn').style.display = 'block';
+                    document.getElementById('navCreateContent').style.display = 'block';
+                    document.getElementById('creatorQuickActions').style.display = 'block';
+                    
                     if (currentUser.isPremium) {
-                        document.getElementById('upcomingEventsBtn').style.display = 'block';
+                        document.getElementById('navPostEvent').style.display = 'block';
+                        document.getElementById('navUpgrade').style.display = 'none';
+                        document.getElementById('premiumTab').style.display = 'block';
                     } else {
-                        document.getElementById('upgradeBtn').style.display = 'block';
+                        document.getElementById('navPostEvent').style.display = 'none';
+                        document.getElementById('navUpgrade').style.display = 'block';
+                        document.getElementById('premiumTab').style.display = 'none';
                     }
+                } else {
+                    document.getElementById('navCreateContent').style.display = 'none';
+                    document.getElementById('creatorQuickActions').style.display = 'none';
                 }
             } else {
                 document.getElementById('userInfo').style.display = 'none';
-                document.getElementById('logoutBtn').style.display = 'none';
-                document.getElementById('createContentBtn').style.display = 'none';
-                document.getElementById('upcomingEventsBtn').style.display = 'none';
-                document.getElementById('upgradeBtn').style.display = 'none';
+                document.getElementById('hamburgerBtn').style.display = 'none';
+                document.getElementById('navCreateContent').style.display = 'none';
+                document.getElementById('navPostEvent').style.display = 'none';
+                document.getElementById('navUpgrade').style.display = 'none';
+                document.getElementById('creatorQuickActions').style.display = 'none';
             }
         }
 
@@ -1137,7 +1581,10 @@
                 return;
             }
 
-            container.innerHTML = auctions.map(auction => `
+            // Sort by time remaining (soonest expiring first)
+            const sortedAuctions = [...auctions].sort((a, b) => a.endTime - b.endTime);
+
+            container.innerHTML = sortedAuctions.map(auction => `
                 <div class="auction-card" onclick="openAuctionModal(${auction.id})">
                     <div class="auction-media">
                         ${auction.mediaType === 'image' 
@@ -1158,8 +1605,8 @@
                                 <div class="current-bid">$${auction.currentBid}</div>
                                 <div class="bid-count">${auction.bidCount} bids${auction.startingBid > 1 ? ` • Started at $${auction.startingBid}` : ''}</div>
                             </div>
-                            <button class="btn btn-primary" style="padding: 0.5rem 1rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
-                                Place Bid
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
+                                Bid
                             </button>
                         </div>
                     </div>
@@ -1187,30 +1634,56 @@
         function openAuctionModal(auctionId) {
             const auction = auctions.find(a => a.id === auctionId);
             if (!auction) return;
+            
+            const isOwnListing = currentUser && auction.creator === currentUser.name;
 
             const modal = document.getElementById('auctionModal');
             const content = document.getElementById('modalContent');
+            
+            let bidSection = '';
+            if (!currentUser) {
+                bidSection = `
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-dark); border-radius: 12px; border: 2px solid var(--accent-fire);">
+                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Login to place a bid</p>
+                        <button class="btn btn-primary" onclick="closeModal(); showSection('loginSection')">
+                            Login
+                        </button>
+                    </div>`;
+            } else if (isOwnListing) {
+                bidSection = `
+                    <div style="text-align: center; padding: 1.5rem; background: var(--bg-dark); border-radius: 12px; border: 2px solid var(--border);">
+                        <p style="color: var(--text-secondary); margin-bottom: 0.5rem;">This is your listing</p>
+                        <p style="color: var(--text-secondary); font-size: 0.875rem;">You cannot bid on your own content</p>
+                    </div>`;
+            } else {
+                bidSection = `
+                    <button class="btn btn-primary" style="width: 100%;" onclick="placeBid(${auction.id}, true)">
+                        Place Bid - $${auction.currentBid + 1}
+                    </button>`;
+            }
 
             content.innerHTML = `
-                <div style="margin-bottom: 1.5rem;">
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                
+                <div style="margin-bottom: 1.5rem; padding-right: 3rem;">
                     <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
                         Posted by @${auction.creator}
                     </div>
-                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem;">
+                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; line-height: 1.3;">
                         ${auction.description}
                     </h2>
                 </div>
 
-                <div style="position: relative; margin-bottom: 1.5rem;">
+                <div class="modal-media-container">
                     ${auction.mediaType === 'image' 
-                        ? `<img src="${auction.mediaUrl}" style="width: 100%; border-radius: 12px;">`
-                        : `<video src="${auction.mediaUrl}" controls style="width: 100%; border-radius: 12px;"></video>`
+                        ? `<img src="${auction.mediaUrl}">`
+                        : `<video src="${auction.mediaUrl}" controls playsinline></video>`
                     }
                     <div class="watermark">REELAUCTION</div>
                 </div>
 
                 <div style="background: var(--bg-dark); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Current Bid</div>
                             <div style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; color: var(--accent-gold);">
@@ -1219,24 +1692,17 @@
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem;">Time Left</div>
-                            <div class="auction-timer" data-end="${auction.endTime}" style="position: static; background: none; padding: 0; font-size: 1.25rem; font-weight: 700;"></div>
+                            <div class="auction-timer" data-end="${auction.endTime}" style="position: static; background: none; padding: 0; font-size: 1.25rem; font-weight: 700; color: var(--accent-fire);"></div>
                         </div>
                     </div>
                     <div style="color: var(--text-secondary); font-size: 0.875rem;">${auction.bidCount} bids • Next bid: $${auction.currentBid + 1}</div>
                 </div>
 
-                ${currentUser ? `
-                    <button class="btn btn-primary" style="width: 100%;" onclick="placeBid(${auction.id}, true)">
-                        Place Bid - $${auction.currentBid + 1}
-                    </button>
-                ` : `
-                    <div style="text-align: center; padding: 1rem; background: var(--bg-dark); border-radius: 12px;">
-                        <p style="color: var(--text-secondary); margin-bottom: 1rem;">Login to place a bid</p>
-                        <button class="btn btn-primary" onclick="closeModal(); showSection('loginSection')">
-                            Login
-                        </button>
-                    </div>
-                `}
+                ${bidSection}
+                
+                <button class="btn btn-ghost" style="width: 100%; margin-top: 1rem;" onclick="closeModal()">
+                    Close
+                </button>
             `;
 
             modal.classList.add('active');
@@ -1255,9 +1721,21 @@
             const auction = auctions.find(a => a.id === auctionId);
             if (!auction) return;
 
+            // Prevent bidding on own listings
+            if (auction.creator === currentUser.name) {
+                showStatus('You cannot bid on your own content', 'error');
+                return;
+            }
+
             // Mock bid placement
             auction.currentBid += 1;
             auction.bidCount += 1;
+            auction.currentBidderId = currentUser.id;
+            
+            // Track this bid
+            if (!userBids.includes(auctionId)) {
+                userBids.push(auctionId);
+            }
 
             loadAuctions();
             if (fromModal) {
@@ -1299,7 +1777,10 @@
 
         function toggleMediaType() {
             mediaType = mediaType === 'photo' ? 'video' : 'photo';
-            document.getElementById('mediaTypeBtn').innerHTML = mediaType === 'photo' ? '📷 Photo' : '🎥 Video';
+            const btn = document.getElementById('mediaTypeBtn');
+            btn.innerHTML = mediaType === 'photo' ? '📷' : '🎥';
+            btn.style.background = mediaType === 'video' ? 'var(--accent-fire)' : 'var(--bg-dark)';
+            btn.style.color = mediaType === 'video' ? 'white' : 'var(--text-primary)';
             initCamera();
         }
 
@@ -1313,6 +1794,14 @@
                 canvas.width = video.videoWidth;
                 canvas.height = video.videoHeight;
                 canvas.getContext('2d').drawImage(video, 0, 0);
+
+                // Play capture sound
+                captureSound.play().catch(e => console.log('Audio play failed:', e));
+                
+                // Show success message
+                const successMsg = document.getElementById('captureSuccessMessage');
+                successMsg.style.display = 'block';
+                setTimeout(() => successMsg.style.display = 'none', 1500);
 
                 canvas.toBlob(blob => {
                     capturedBlob = blob;
@@ -1343,6 +1832,16 @@
                 mediaRecorder.onstop = () => {
                     capturedBlob = new Blob(recordedChunks, { type: 'video/webm' });
                     const url = URL.createObjectURL(capturedBlob);
+                    
+                    // Show success message
+                    const successMsg = document.getElementById('captureSuccessMessage');
+                    successMsg.textContent = '✓ Video Captured!';
+                    successMsg.style.display = 'block';
+                    setTimeout(() => {
+                        successMsg.style.display = 'none';
+                        successMsg.textContent = '✓ Content Captured!';
+                    }, 1500);
+                    
                     document.getElementById('capturedMedia').src = url;
                     document.getElementById('capturedMedia').style.display = 'block';
                     document.getElementById('videoPreview').style.display = 'none';
@@ -1357,6 +1856,9 @@
                 isRecording = true;
                 btn.classList.add('recording');
                 document.getElementById('cameraTimer').style.display = 'block';
+                
+                // Play record start sound
+                recordStartSound.play().catch(e => console.log('Audio play failed:', e));
 
                 recordingSeconds = 0;
                 recordingTimer = setInterval(() => {
@@ -1378,6 +1880,9 @@
                 clearInterval(recordingTimer);
                 document.getElementById('cameraTimer').style.display = 'none';
                 mediaRecorder.stop();
+                
+                // Play record stop sound
+                recordStopSound.play().catch(e => console.log('Audio play failed:', e));
             }
         }
 
