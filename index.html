@@ -1058,7 +1058,7 @@
             📸 Create Content
         </button>
         <button class="mobile-nav-item" onclick="showSection('eventsSection'); toggleMobileNav()">
-            📅 Upcoming Events
+            📅 View Upcoming Events
         </button>
         <button class="mobile-nav-item" id="navPostEvent" style="display: none;" onclick="showSection('postEventSection'); toggleMobileNav()">
             ➕ Post Event
@@ -1571,6 +1571,20 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
+            // Try to restore user session from localStorage
+            const savedUser = localStorage.getItem('reelauction_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateUserInterface();
+                    showSection('dashboardSection');
+                    console.log('Session restored:', currentUser.name);
+                } catch (error) {
+                    console.error('Failed to restore session:', error);
+                    localStorage.removeItem('reelauction_user');
+                }
+            }
+            
             loadAuctions();
             setupEventListeners();
             startAuctionTimers();
@@ -1700,6 +1714,9 @@
                 isPremium: false
             };
 
+            // Save user to localStorage for session persistence
+            localStorage.setItem('reelauction_user', JSON.stringify(currentUser));
+
             updateUserInterface();
             showSection('dashboardSection');
             showStatus('Welcome back!', 'success');
@@ -1721,6 +1738,9 @@
                 isPremium: false
             };
 
+            // Save user to localStorage for session persistence
+            localStorage.setItem('reelauction_user', JSON.stringify(currentUser));
+
             updateUserInterface();
             showSection('dashboardSection');
             showStatus('Account created! Welcome to ReelAuction.', 'success');
@@ -1728,6 +1748,10 @@
 
         function handleLogout() {
             currentUser = null;
+            
+            // Clear localStorage on logout
+            localStorage.removeItem('reelauction_user');
+            
             updateUserInterface();
             showSection('landingSection');
             showStatus('Logged out successfully', 'info');
@@ -1787,7 +1811,6 @@
                             : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
                         }
                         <div class="watermark">REELAUCTION</div>
-                        <div class="auction-timer" data-end="${auction.endTime}">--:--</div>
                         ${auction.isPremiumContent && auction.startingBid > 1 
                             ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
                             : ''
@@ -1803,6 +1826,10 @@
                             <div>
                                 <div class="current-bid">$${auction.currentBid}</div>
                                 <div class="bid-count">${auction.bidCount} bids${auction.startingBid > 1 ? ` • Started at $${auction.startingBid}` : ''}</div>
+                                <div style="color: var(--accent-fire); font-size: 0.875rem; font-weight: 700; margin-top: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Time Remaining:</span> 
+                                    <span class="auction-timer" data-end="${auction.endTime}">--:--</span>
+                                </div>
                             </div>
                             <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
                                 Bid
@@ -1899,6 +1926,35 @@
 
                 ${bidSection}
                 
+                <!-- Value Proposition Section -->
+                <div style="background: linear-gradient(135deg, rgba(255, 61, 0, 0.1), rgba(255, 215, 0, 0.1)); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem;">
+                    <div style="font-weight: 700; color: var(--accent-gold); margin-bottom: 1rem; font-size: 1rem;">
+                        🏆 What You're Buying
+                    </div>
+                    <div style="display: grid; gap: 0.75rem; font-size: 0.875rem;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <span style="color: var(--success);">✓</span>
+                            <span><strong>One-of-One Ownership:</strong> This is the ONLY unwatermarked copy in existence</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <span style="color: var(--success);">✓</span>
+                            <span><strong>Certificate of Authenticity:</strong> GPS-verified, timestamped, cryptographically signed</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <span style="color: var(--success);">✓</span>
+                            <span><strong>Full Commercial Rights:</strong> Use for news, marketing, resale, or archival</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <span style="color: var(--success);">✓</span>
+                            <span><strong>Verified Authenticity:</strong> Captured live in-app, no uploads allowed</span>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <span style="color: var(--success);">✓</span>
+                            <span><strong>Instant Delivery:</strong> Content + certificate delivered immediately upon winning</span>
+                        </div>
+                    </div>
+                </div>
+                
                 <button class="btn btn-ghost" style="width: 100%; margin-top: 1rem;" onclick="closeModal()">
                     Close
                 </button>
@@ -1923,6 +1979,12 @@
             // Prevent bidding on own listings
             if (auction.creator === currentUser.name) {
                 showStatus('You cannot bid on your own content', 'error');
+                return;
+            }
+            
+            // Prevent bidding if already winning
+            if (auction.currentBidderId === currentUser.id) {
+                showStatus('You are already the highest bidder! 🎉', 'info');
                 return;
             }
 
@@ -2625,6 +2687,10 @@ Content Hash: ${metadata.contentHash}
         function handleUpgrade() {
             // Mock upgrade (in production, this would use Stripe Checkout)
             currentUser.isPremium = true;
+            
+            // Update localStorage
+            localStorage.setItem('reelauction_user', JSON.stringify(currentUser));
+            
             updateUserInterface();
             closeModal();
             showStatus('Welcome to Premium! You can now set custom starting bids and post events.', 'success');
