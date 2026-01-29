@@ -1187,6 +1187,22 @@
                         </button>
                     </div>
                 </div>
+                
+                <!-- Search Field -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="position: relative;">
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            placeholder="🔍 Search auctions by description..." 
+                            onkeyup="filterAuctions()"
+                            style="width: 100%; padding: 1rem 1rem 1rem 3rem; background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; color: var(--text-primary); font-size: 1rem; transition: all 0.3s;"
+                            onfocus="this.style.borderColor='var(--accent-fire)'; this.style.boxShadow='0 0 0 3px rgba(255, 61, 0, 0.1)'"
+                            onblur="this.style.borderColor='var(--border)'; this.style.boxShadow='none'"
+                        >
+                        <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.25rem; pointer-events: none;">🔍</span>
+                    </div>
+                </div>
             </div>
 
             <div id="auctionsContainer" class="auction-grid">
@@ -1526,6 +1542,9 @@
         
         // Certificate of Authenticity metadata
         let captureMetadata = null;
+        
+        // Events storage
+        let postedEvents = [];
 
         // Audio feedback
         const captureSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDUIFmm98OScTgwOUKvm87FdFwlFnd7wvmEcBS1+zO/biS8IGWu58+SaTBELUrDn9LJeFgpFnN/xwGIdBTSAy+3ciSYII2y589+UTREKUbDk9LRZFQpGm+Dxvl0bBzN9y+7biSgHI2y589+URhIKUa/k9LdYFAtFm9/xwF4bCDR8yezfiSMHJG268t6URBMJUq/l9LdYEwlGnN/xwWAbCTN8ye3biB8GJW+68t2RQxIJUq7m9LlXEwtGnN/xwWAdCTN7ye3bhx0GJ2+88tyQQhIIUq3m9LpWEwpGnt/xwl8dCDN7yO3bhBwGKXC98tuNQBIIUq3m9LxWEQpGnt/xxGAdBzN6x+3agxsGKnG+9dqLPRAHUqzn9L5WEQlEnODxxWIcBzN5xu3ZgRoGK3G/9dmJOw8GUqvm9MBVEAlEnODxyGMcBjJ5xe3ZgBkGLHHB9tiIOQ4FUarm9MJUDwhEneDxymQcBjJ4xOzYfhgGLXHD9deHNg0FUajm9MRUDQdDneDxzGUcBTF4w+zYfRYGLnHE9daGMwwEUKjl9MZUDAdDnuHx0GYcBDB3w+vXfBUGMHHF9dWEMQsFT6fk9MhTCwZCnuHx0WgcAy94wuvXehQFMXLG9dSCLgoFTqfk9cpTCgVBneLx1GobAy53wOrWeBMFM3LI9dOAKQkFTaXj9M1SCQVBneLx1m0bAix2v+rVdRIFNXPJ9dJ+JwgFTKTi9NBRBwQ/nOPx2G4aASp1vunUcxEFN3TK9dF8JQcES6Ph9NJRBgQ+m+Tx2nAaASl0venTcg8EOXXL9dB6IwYESaPh9NRQBgM9muPx3HIaACh0vOjSbw4EOXbM9c94IQUDSKLg9NZPBgI8mePx33MZACd0u+fSbQwDO3fN9c13HwQDR6Hf9NhPBQE6mOLx4XUZACVzuubRagsEPHjO9cx1HQMCSKDe9NpOBQA5l+Hx5HYZACRyueXRaAkDPnnP9ct0GwMCRp/d9NxOBQA3leDx5ngZACNxuOTQZQgEQHrQ9cp0GgICRZ7d9N5NBQA2lN/x6HkZACJwt+PQYwcEQnvR9clyGAEBRJ3c9OBNBAA0k97x6noY//9vtuLPYQYDRHzS9shxFgEBQpvb9OJNBP8zkt7x7HsY//5uu+HPXwQDRn7T9sdwFAAAQZra8+RMAwAykdzy7nwY//5tu+DPXQIDSIDo');
@@ -1622,6 +1641,11 @@
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
             document.getElementById(sectionId).classList.add('active');
+            
+            // Load events when showing events section
+            if (sectionId === 'eventsSection') {
+                loadEvents();
+            }
             
             // Close mobile nav when navigating
             document.getElementById('mobileNav').classList.remove('active');
@@ -1802,6 +1826,65 @@
 
             // Sort by time remaining (soonest expiring first)
             const sortedAuctions = [...auctions].sort((a, b) => a.endTime - b.endTime);
+
+            container.innerHTML = sortedAuctions.map(auction => `
+                <div class="auction-card" onclick="openAuctionModal(${auction.id})">
+                    <div class="auction-media">
+                        ${auction.mediaType === 'image' 
+                            ? `<img src="${auction.mediaUrl}" alt="${auction.description}">`
+                            : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
+                        }
+                        <div class="watermark">REELAUCTION</div>
+                        ${auction.isPremiumContent && auction.startingBid > 1 
+                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
+                            : ''
+                        }
+                        ${auction.certificateMetadata 
+                            ? `<div style="position: absolute; top: 1rem; left: 1rem; background: rgba(0, 0, 0, 0.8); color: var(--accent-gold); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--accent-gold);">🏆 CERTIFIED</div>`
+                            : ''
+                        }
+                    </div>
+                    <div class="auction-info">
+                        <div class="auction-description">${auction.description}</div>
+                        <div class="auction-meta">
+                            <div>
+                                <div class="current-bid">$${auction.currentBid}</div>
+                                <div class="bid-count">${auction.bidCount} bids${auction.startingBid > 1 ? ` • Started at $${auction.startingBid}` : ''}</div>
+                                <div style="color: var(--accent-fire); font-size: 0.875rem; font-weight: 700; margin-top: 0.25rem;">
+                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Time Remaining:</span> 
+                                    <span class="auction-timer" data-end="${auction.endTime}">--:--</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
+                                Bid
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function filterAuctions() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            if (!searchTerm) {
+                loadAuctions();
+                return;
+            }
+            
+            const container = document.getElementById('auctionsContainer');
+            const filteredAuctions = auctions.filter(auction => 
+                auction.description.toLowerCase().includes(searchTerm) ||
+                auction.creator.toLowerCase().includes(searchTerm)
+            );
+            
+            if (filteredAuctions.length === 0) {
+                container.innerHTML = '<div class="loading"><p>No auctions match your search.</p></div>';
+                return;
+            }
+            
+            // Sort by time remaining
+            const sortedAuctions = [...filteredAuctions].sort((a, b) => a.endTime - b.endTime);
 
             container.innerHTML = sortedAuctions.map(auction => `
                 <div class="auction-card" onclick="openAuctionModal(${auction.id})">
@@ -2621,10 +2704,172 @@ Content Hash: ${metadata.contentHash}
                 return;
             }
 
-            // Mock event posting
+            const description = document.getElementById('eventDescription').value;
+            const dateTime = document.getElementById('eventDateTime').value;
+            const location = document.getElementById('eventLocation').value;
+
+            // Create new event
+            const newEvent = {
+                id: Date.now(),
+                creator: currentUser.name,
+                description: description,
+                dateTime: new Date(dateTime),
+                location: location,
+                postedAt: new Date()
+            };
+
+            postedEvents.unshift(newEvent);
+            
+            // Show events section and load them
             showSection('eventsSection');
+            loadEvents();
             showStatus('Event posted successfully!', 'success');
             e.target.reset();
+        }
+        
+        function loadEvents() {
+            const container = document.getElementById('eventsContainer');
+            const now = new Date();
+            
+            // Filter out past events (events that have already started)
+            const upcomingEvents = postedEvents.filter(event => {
+                const eventDate = new Date(event.dateTime);
+                // Keep events that haven't started yet OR are currently happening (within 3 hours of start)
+                const eventEndTime = new Date(eventDate.getTime() + (3 * 60 * 60 * 1000)); // 3 hours after start
+                return eventEndTime > now;
+            });
+            
+            // Sort by soonest event first
+            const sortedEvents = upcomingEvents.sort((a, b) => {
+                return new Date(a.dateTime) - new Date(b.dateTime);
+            });
+            
+            if (sortedEvents.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: var(--text-secondary);">
+                        <p style="font-size: 1.1rem; margin-bottom: 0.5rem;">No upcoming events posted yet</p>
+                        <p style="font-size: 0.875rem;">Premium creators can announce where they'll be capturing content</p>
+                    </div>
+                    
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-creator">@NewsHunter</div>
+                                <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                            </div>
+                            <div class="event-badge">UPCOMING</div>
+                        </div>
+                        <div class="event-description">
+                            I'll be covering the tech conference tomorrow morning. Expecting exclusive interviews and product launches.
+                        </div>
+                        <div class="event-time">📅 Tomorrow, 9:00 AM PST • 🌎 San Francisco</div>
+                    </div>
+
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-creator">@StreetPhotog</div>
+                                <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                            </div>
+                            <div class="event-badge">LIVE NOW</div>
+                        </div>
+                        <div class="event-description">
+                            Currently at the music festival capturing performances. Will post exclusive backstage content throughout the evening.
+                        </div>
+                        <div class="event-time">📅 Today, 6:00 PM PST • 🌎 Los Angeles</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const eventsHTML = sortedEvents.map(event => {
+                const eventDate = new Date(event.dateTime);
+                const timeUntilEvent = eventDate - now;
+                
+                // Determine event status
+                let badge = 'UPCOMING';
+                let badgeColor = 'var(--accent-gold)';
+                
+                // If event started within last 3 hours, it's LIVE NOW
+                if (timeUntilEvent < 0 && timeUntilEvent > -(3 * 60 * 60 * 1000)) {
+                    badge = 'LIVE NOW';
+                    badgeColor = 'var(--accent-fire)';
+                }
+                
+                // Format date/time
+                const formattedDate = eventDate.toLocaleString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true
+                });
+                
+                // Calculate time until event
+                let timeUntilText = '';
+                if (timeUntilEvent > 0) {
+                    const hoursUntil = Math.floor(timeUntilEvent / (1000 * 60 * 60));
+                    const daysUntil = Math.floor(hoursUntil / 24);
+                    
+                    if (daysUntil > 0) {
+                        timeUntilText = ` • Starts in ${daysUntil} day${daysUntil > 1 ? 's' : ''}`;
+                    } else if (hoursUntil > 0) {
+                        timeUntilText = ` • Starts in ${hoursUntil} hour${hoursUntil > 1 ? 's' : ''}`;
+                    } else {
+                        const minutesUntil = Math.floor(timeUntilEvent / (1000 * 60));
+                        timeUntilText = ` • Starts in ${minutesUntil} minute${minutesUntil > 1 ? 's' : ''}`;
+                    }
+                }
+                
+                return `
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div>
+                                <div class="event-creator">@${event.creator}</div>
+                                <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                            </div>
+                            <div class="event-badge" style="background: ${badgeColor};">${badge}</div>
+                        </div>
+                        <div class="event-description">
+                            ${event.description}
+                        </div>
+                        <div class="event-time">
+                            📅 ${formattedDate} • 🌎 ${event.location}${timeUntilText}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            // Add user events + sample events
+            container.innerHTML = eventsHTML + `
+                <div class="event-card">
+                    <div class="event-header">
+                        <div>
+                            <div class="event-creator">@NewsHunter</div>
+                            <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                        </div>
+                        <div class="event-badge">UPCOMING</div>
+                    </div>
+                    <div class="event-description">
+                        I'll be covering the tech conference tomorrow morning. Expecting exclusive interviews and product launches.
+                    </div>
+                    <div class="event-time">📅 Tomorrow, 9:00 AM PST • 🌎 San Francisco</div>
+                </div>
+
+                <div class="event-card">
+                    <div class="event-header">
+                        <div>
+                            <div class="event-creator">@StreetPhotog</div>
+                            <div class="premium-badge" style="margin-top: 0.5rem; display: inline-flex;">⭐ PREMIUM</div>
+                        </div>
+                        <div class="event-badge" style="background: var(--accent-fire);">LIVE NOW</div>
+                    </div>
+                    <div class="event-description">
+                        Currently at the music festival capturing performances. Will post exclusive backstage content throughout the evening.
+                    </div>
+                    <div class="event-time">📅 Today, 6:00 PM PST • 🌎 Los Angeles</div>
+                </div>
+            `;
         }
 
         function showUpgradeModal() {
