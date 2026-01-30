@@ -1683,6 +1683,15 @@
                 <button class="btn btn-ghost" style="width: 100%; margin-top: 1.5rem;" onclick="showSection('dashboardSection')">
                     ← Back to Auctions
                 </button>
+                
+                <!-- Debug Panel (visible on screen for testing) -->
+                <div id="debugPanel" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.95); color: #00ff88; padding: 1rem; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.75rem; z-index: 10000; border-top: 2px solid #00ff88;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <strong>🐛 Debug Log</strong>
+                        <button onclick="document.getElementById('debugPanel').style.display='none'" style="background: none; border: none; color: #ff3d00; cursor: pointer;">✕ Close</button>
+                    </div>
+                    <div id="debugLog"></div>
+                </div>
             </div>
         </section>
 
@@ -1842,6 +1851,31 @@
 
     <script>
         // State Management
+        // Debug function - shows messages on screen for mobile testing
+        function debugLog(message, data = null) {
+            console.log(message, data);
+            
+            const debugPanel = document.getElementById('debugPanel');
+            const debugLog = document.getElementById('debugLog');
+            
+            debugPanel.style.display = 'block';
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '0.25rem';
+            logEntry.style.borderBottom = '1px solid rgba(0, 255, 136, 0.2)';
+            logEntry.style.paddingBottom = '0.25rem';
+            
+            if (data) {
+                logEntry.innerHTML = `[${timestamp}] ${message}<br><span style="color: #ffd700;">${JSON.stringify(data, null, 2)}</span>`;
+            } else {
+                logEntry.innerHTML = `[${timestamp}] ${message}`;
+            }
+            
+            debugLog.appendChild(logEntry);
+            debugLog.scrollTop = debugLog.scrollHeight;
+        }
+
         let currentUser = null;
         let mediaStream = null;
         let mediaRecorder = null;
@@ -2254,17 +2288,22 @@
         // ========================================
         
         async function openProCapture() {
+            debugLog('🚀 openProCapture called');
+            
             if (!currentUser) {
+                debugLog('❌ No user logged in');
                 showStatus('Please login to create content', 'error');
                 showSection('loginSection');
                 return;
             }
             
+            debugLog('✅ User logged in', { user: currentUser.name });
             isProCapture = true;
             
             try {
                 // Request camera/microphone access
                 showStatus('📸 Opening camera...', 'info');
+                debugLog('📸 Creating file input for camera');
                 
                 // Use native file input with camera capture
                 const input = document.createElement('input');
@@ -2272,12 +2311,22 @@
                 input.accept = 'image/*,video/*';
                 input.capture = 'environment'; // Use back camera
                 
+                debugLog('📸 File input created, setting onchange handler');
+                
                 input.onchange = async (e) => {
+                    debugLog('📸 File selected from camera');
                     const file = e.target.files[0];
                     if (!file) {
+                        debugLog('❌ No file selected');
                         showStatus('No file selected', 'error');
                         return;
                     }
+                    
+                    debugLog('✅ File received', { 
+                        name: file.name, 
+                        type: file.type, 
+                        size: file.size 
+                    });
                     
                     // Show uploading status
                     showStatus('📤 Uploading to cloud...', 'info');
@@ -2287,16 +2336,18 @@
                 };
                 
                 // Trigger file picker (opens camera on mobile)
+                debugLog('📸 Clicking file input to open camera');
                 input.click();
                 
             } catch (error) {
+                debugLog('❌ Camera error', { error: error.message });
                 console.error('Camera error:', error);
                 showStatus('Camera access denied. Please enable camera permissions.', 'error');
             }
         }
         
         async function uploadToCloudinary(file) {
-            console.log('uploadToCloudinary called with file:', file);
+            debugLog('📤 uploadToCloudinary started', { fileName: file.name, fileType: file.type });
             
             try {
                 const formData = new FormData();
@@ -2306,28 +2357,29 @@
                 
                 // Detect if it's a video or image
                 const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
-                console.log('Resource type:', resourceType);
+                debugLog(`📤 Resource type: ${resourceType}`);
                 
                 const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
-                console.log('Uploading to:', uploadUrl);
+                debugLog('📤 Uploading to Cloudinary...');
                 
                 const response = await fetch(uploadUrl, {
                     method: 'POST',
                     body: formData
                 });
                 
-                console.log('Upload response status:', response.status);
+                debugLog(`📤 Upload response status: ${response.status}`);
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Upload failed with status:', response.status, errorText);
+                    debugLog('❌ Upload failed', { status: response.status, error: errorText });
                     throw new Error('Upload failed: ' + errorText);
                 }
                 
                 const data = await response.json();
-                console.log('Upload successful! Data:', data);
+                debugLog('✅ Upload successful!', { url: data.secure_url });
                 
                 // Process the uploaded file
+                debugLog('🔄 Calling handleCloudinaryUpload...');
                 await handleCloudinaryUpload(null, {
                     event: 'success',
                     info: {
@@ -2344,15 +2396,17 @@
                 });
                 
             } catch (error) {
+                debugLog('❌ Upload error', { error: error.message });
                 console.error('Upload error:', error);
                 showStatus('Upload failed. Please try again. Error: ' + error.message, 'error');
             }
         }
         
         async function handleCloudinaryUpload(error, result) {
-            console.log('handleCloudinaryUpload called', { error, result });
+            debugLog('🔄 handleCloudinaryUpload called');
             
             if (error) {
+                debugLog('❌ Upload error received', { error });
                 console.error('Cloudinary upload error:', error);
                 showStatus('Upload failed. Please try again.', 'error');
                 return;
@@ -2360,7 +2414,7 @@
             
             if (result && result.event === 'success') {
                 const info = result.info;
-                console.log('Upload successful, info:', info);
+                debugLog('✅ Upload success!', { url: info.secure_url });
                 
                 const mediaType = info.resource_type; // 'image' or 'video'
                 const mediaUrl = info.secure_url;
@@ -2369,11 +2423,11 @@
                 const uploadedAt = new Date(info.created_at);
                 const secondsAgo = (Date.now() - uploadedAt) / 1000;
                 
-                console.log('Timestamp validation:', { uploadedAt, secondsAgo });
+                debugLog('⏱️ Timestamp check', { uploadedAt: info.created_at, secondsAgo });
                 
                 // Make validation more lenient (5 minutes instead of 60 seconds)
                 if (secondsAgo > 300) {
-                    console.warn('Content older than 5 minutes:', secondsAgo);
+                    debugLog('❌ Content too old');
                     showStatus('Content must be uploaded within 5 minutes of capture', 'error');
                     return;
                 }
@@ -2382,9 +2436,10 @@
                 const imageHash = info.etag || info.public_id;
                 const isDuplicate = auctions.some(a => a.certificateMetadata && a.certificateMetadata.hash === imageHash);
                 
-                console.log('Duplicate check:', { imageHash, isDuplicate });
+                debugLog('🔍 Duplicate check', { hash: imageHash, isDuplicate });
                 
                 if (isDuplicate) {
+                    debugLog('❌ Duplicate detected');
                     showStatus('This content has already been uploaded', 'error');
                     return;
                 }
@@ -2396,15 +2451,17 @@
                     lng: exifData.GPSLongitude || null
                 };
                 
+                debugLog('📍 GPS data', gps);
+                
                 // If no GPS in EXIF, try to get current location
                 if (!gps.lat || !gps.lng) {
                     try {
                         const position = await getCurrentPosition();
                         gps.lat = position.coords.latitude;
                         gps.lng = position.coords.longitude;
-                        console.log('GPS from geolocation:', gps);
+                        debugLog('📍 GPS from geolocation', gps);
                     } catch (e) {
-                        console.log('GPS not available:', e);
+                        debugLog('⚠️ GPS not available', { error: e.message });
                     }
                 }
                 
@@ -2416,46 +2473,42 @@
                     hash: imageHash,
                     camera: exifData.Make ? `${exifData.Make} ${exifData.Model || ''}`.trim() : 'Unknown',
                     verified: true,
-                    serverTimestamp: true, // Flag that this is server-verified
+                    serverTimestamp: true,
                     isoPro: exifData.ISOSpeed,
                     aperture: exifData.FNumber,
                     shutterSpeed: exifData.ExposureTime,
                     focalLength: exifData.FocalLength,
                     width: info.width,
                     height: info.height,
-                    duration: info.duration || null // For videos
+                    duration: info.duration || null
                 };
                 
-                console.log('Certificate metadata created:', captureMetadata);
+                debugLog('📜 Certificate created');
                 
                 // Set the media URL (Cloudinary CDN URL)
                 capturedBlob = mediaUrl;
                 
-                console.log('About to show preview and form...');
+                debugLog('🖼️ Showing preview section...');
                 
                 // Show the camera preview section with captured content
                 document.getElementById('cameraPreviewSection').style.display = 'block';
                 
                 // Show success based on media type
                 if (mediaType === 'video') {
-                    console.log('Displaying video...');
-                    // Show video success overlay
+                    debugLog('🎥 Displaying video');
                     document.getElementById('videoSuccessOverlay').style.display = 'flex';
                     
-                    // Also set the actual video element
                     const videoEl = document.getElementById('capturedMedia');
                     videoEl.src = mediaUrl;
                     videoEl.controls = true;
                     videoEl.style.display = 'block';
                     videoEl.style.objectFit = 'contain';
                     
-                    // Hide the success overlay after 2 seconds
                     setTimeout(() => {
                         document.getElementById('videoSuccessOverlay').style.display = 'none';
                     }, 2000);
                 } else {
-                    console.log('Displaying image...');
-                    // Show photo
+                    debugLog('🖼️ Displaying image');
                     const imgEl = document.getElementById('capturedMedia');
                     imgEl.src = mediaUrl;
                     imgEl.style.display = 'block';
@@ -2463,17 +2516,30 @@
                     document.getElementById('videoPreview').style.display = 'none';
                 }
                 
-                console.log('Showing content form...');
+                debugLog('📝 Showing content form...');
+                
                 // Show content form prominently
-                document.getElementById('contentForm').style.display = 'block';
+                const contentForm = document.getElementById('contentForm');
+                contentForm.style.display = 'block';
+                
+                debugLog('✅ Form display set to block');
+                
+                // Set premium starting bid option if user is premium
+                if (currentUser.isPremium) {
+                    document.getElementById('startingBidGroup').style.display = 'block';
+                    debugLog('⭐ Premium features enabled');
+                }
+                
+                showStatus(`✓ ${mediaType === 'video' ? 'Video' : 'Photo'} captured! Add description to list.`, 'success');
                 
                 // Scroll to the form so user sees it
                 setTimeout(() => {
-                    console.log('Scrolling to form...');
-                    document.getElementById('contentForm').scrollIntoView({ 
+                    debugLog('📜 Scrolling to form...');
+                    contentForm.scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'start' 
                     });
+                    debugLog('✅ ALL DONE! Form should be visible now');
                 }, 500);
                 
                 // Set premium starting bid option if user is premium
