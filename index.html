@@ -2296,6 +2296,8 @@
         }
         
         async function uploadToCloudinary(file) {
+            console.log('uploadToCloudinary called with file:', file);
+            
             try {
                 const formData = new FormData();
                 formData.append('file', file);
@@ -2304,23 +2306,29 @@
                 
                 // Detect if it's a video or image
                 const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+                console.log('Resource type:', resourceType);
                 
-                const response = await fetch(
-                    `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`,
-                    {
-                        method: 'POST',
-                        body: formData
-                    }
-                );
+                const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
+                console.log('Uploading to:', uploadUrl);
+                
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                console.log('Upload response status:', response.status);
                 
                 if (!response.ok) {
-                    throw new Error('Upload failed');
+                    const errorText = await response.text();
+                    console.error('Upload failed with status:', response.status, errorText);
+                    throw new Error('Upload failed: ' + errorText);
                 }
                 
                 const data = await response.json();
+                console.log('Upload successful! Data:', data);
                 
                 // Process the uploaded file
-                handleCloudinaryUpload(null, {
+                await handleCloudinaryUpload(null, {
                     event: 'success',
                     info: {
                         resource_type: resourceType,
@@ -2337,11 +2345,13 @@
                 
             } catch (error) {
                 console.error('Upload error:', error);
-                showStatus('Upload failed. Please try again.', 'error');
+                showStatus('Upload failed. Please try again. Error: ' + error.message, 'error');
             }
         }
         
         async function handleCloudinaryUpload(error, result) {
+            console.log('handleCloudinaryUpload called', { error, result });
+            
             if (error) {
                 console.error('Cloudinary upload error:', error);
                 showStatus('Upload failed. Please try again.', 'error');
@@ -2350,6 +2360,8 @@
             
             if (result && result.event === 'success') {
                 const info = result.info;
+                console.log('Upload successful, info:', info);
+                
                 const mediaType = info.resource_type; // 'image' or 'video'
                 const mediaUrl = info.secure_url;
                 
@@ -2357,14 +2369,20 @@
                 const uploadedAt = new Date(info.created_at);
                 const secondsAgo = (Date.now() - uploadedAt) / 1000;
                 
-                if (secondsAgo > 60) {
-                    showStatus('Content must be uploaded within 60 seconds of capture', 'error');
+                console.log('Timestamp validation:', { uploadedAt, secondsAgo });
+                
+                // Make validation more lenient (5 minutes instead of 60 seconds)
+                if (secondsAgo > 300) {
+                    console.warn('Content older than 5 minutes:', secondsAgo);
+                    showStatus('Content must be uploaded within 5 minutes of capture', 'error');
                     return;
                 }
                 
                 // Check for duplicates using Cloudinary's unique hash
-                const imageHash = info.etag;
+                const imageHash = info.etag || info.public_id;
                 const isDuplicate = auctions.some(a => a.certificateMetadata && a.certificateMetadata.hash === imageHash);
+                
+                console.log('Duplicate check:', { imageHash, isDuplicate });
                 
                 if (isDuplicate) {
                     showStatus('This content has already been uploaded', 'error');
@@ -2384,8 +2402,9 @@
                         const position = await getCurrentPosition();
                         gps.lat = position.coords.latitude;
                         gps.lng = position.coords.longitude;
+                        console.log('GPS from geolocation:', gps);
                     } catch (e) {
-                        console.log('GPS not available');
+                        console.log('GPS not available:', e);
                     }
                 }
                 
@@ -2407,14 +2426,19 @@
                     duration: info.duration || null // For videos
                 };
                 
+                console.log('Certificate metadata created:', captureMetadata);
+                
                 // Set the media URL (Cloudinary CDN URL)
                 capturedBlob = mediaUrl;
+                
+                console.log('About to show preview and form...');
                 
                 // Show the camera preview section with captured content
                 document.getElementById('cameraPreviewSection').style.display = 'block';
                 
                 // Show success based on media type
                 if (mediaType === 'video') {
+                    console.log('Displaying video...');
                     // Show video success overlay
                     document.getElementById('videoSuccessOverlay').style.display = 'flex';
                     
@@ -2430,6 +2454,7 @@
                         document.getElementById('videoSuccessOverlay').style.display = 'none';
                     }, 2000);
                 } else {
+                    console.log('Displaying image...');
                     // Show photo
                     const imgEl = document.getElementById('capturedMedia');
                     imgEl.src = mediaUrl;
@@ -2438,11 +2463,13 @@
                     document.getElementById('videoPreview').style.display = 'none';
                 }
                 
+                console.log('Showing content form...');
                 // Show content form prominently
                 document.getElementById('contentForm').style.display = 'block';
                 
                 // Scroll to the form so user sees it
                 setTimeout(() => {
+                    console.log('Scrolling to form...');
                     document.getElementById('contentForm').scrollIntoView({ 
                         behavior: 'smooth', 
                         block: 'start' 
