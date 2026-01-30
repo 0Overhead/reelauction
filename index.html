@@ -13,6 +13,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
     
+    <!-- Cloudinary Upload Widget -->
+    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    
     <style>
         :root {
             --bg-dark: #0a0a0a;
@@ -385,6 +388,15 @@
             max-width: 600px;
             margin: 0 auto;
         }
+        
+        .capture-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        
+        .capture-option:active {
+            transform: translateY(0);
+        }
 
         .camera-view {
             position: relative;
@@ -401,12 +413,28 @@
         #capturedMedia {
             width: 100%;
             display: block;
-            background: #000;
+            background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
             max-height: 50vh;
-            object-fit: cover;
+            object-fit: contain;
             touch-action: pinch-zoom;
             -webkit-user-select: none;
             user-select: none;
+        }
+        
+        .video-success-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 61, 0, 0.9), rgba(255, 215, 0, 0.9));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Archivo Black', sans-serif;
+            z-index: 10;
         }
         
         /* Grid Overlay */
@@ -1053,6 +1081,9 @@
         <button class="mobile-nav-item" onclick="showSection('userDashboardSection'); toggleMobileNav()">
             📊 My Dashboard
         </button>
+        <button class="mobile-nav-item" id="navAdminDashboard" style="display: none;" onclick="showSection('adminDashboardSection'); toggleMobileNav()">
+            🔒 Admin Dashboard
+        </button>
         <button class="mobile-nav-item" onclick="showSection('dashboardSection'); toggleMobileNav()">
             🔥 Live Auctions
         </button>
@@ -1087,7 +1118,7 @@
                     <button class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;" onclick="showSection('registerSection')">Start Creating</button>
                     <button class="btn btn-secondary" style="font-size: 1.1rem; padding: 1rem 2.5rem;" onclick="showSection('loginSection')">Login</button>
                 </div>
-                <p style="font-size: 0.875rem; color: var(--text-secondary);">Join 10,000+ creators earning from their moments • Free to join</p>
+                <p style="font-size: 0.875rem; color: var(--text-secondary);">Start earning from your moments • Free to join</p>
             </div>
 
             <!-- Sample Live Auction -->
@@ -1141,7 +1172,7 @@
                     <div class="event-description">
                         Currently at Pebble Beach Car Show capturing rare vintage vehicles and new releases. Exclusive access to VIP area!
                     </div>
-                    <div class="event-time">📅 Today, 2:00 PM PST • 🌎 Pebble Beach, CA</div>
+                    <div class="event-time">📅 Today, 2:00 PM - 6:00 PM PST • 🌎 Pebble Beach, CA</div>
                 </div>
 
                 <div class="event-card">
@@ -1155,7 +1186,7 @@
                     <div class="event-description">
                         Front row at tonight's sold-out stadium concert. Expecting incredible shots of the performance and crowd energy.
                     </div>
-                    <div class="event-time">📅 Tonight, 8:00 PM EST • 🌎 Madison Square Garden • Starts in 5 hours</div>
+                    <div class="event-time">📅 Tonight, 8:00 PM - 11:30 PM EST • 🌎 Madison Square Garden • Starts in 5 hours</div>
                 </div>
             </div>
 
@@ -1250,7 +1281,7 @@
                     Ready to Start Earning?
                 </h2>
                 <p style="font-size: 1.2rem; color: var(--text-secondary); margin-bottom: 2rem;">
-                    Join thousands of creators turning everyday moments into income
+                    Turn everyday moments into income
                 </p>
                 <button class="btn btn-primary" style="font-size: 1.2rem; padding: 1.25rem 3rem; margin-bottom: 1rem;" onclick="showSection('registerSection')">
                     Create Free Account
@@ -1368,7 +1399,7 @@
                         <input 
                             type="text" 
                             id="searchInput" 
-                            placeholder="🔍 Search auctions by description..." 
+                            placeholder="Search auctions by description..." 
                             onkeyup="filterAuctions()"
                             style="width: 100%; padding: 1rem 1rem 1rem 3rem; background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; color: var(--text-primary); font-size: 1rem; transition: all 0.3s;"
                             onfocus="this.style.borderColor='var(--accent-fire)'; this.style.boxShadow='0 0 0 3px rgba(255, 61, 0, 0.1)'"
@@ -1472,9 +1503,38 @@
                 <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 0.5rem; text-align: center;">
                     Create Content
                 </h2>
-                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem;">
-                    Capture a photo or video right now
+                <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
+                    Choose your capture method
                 </p>
+                
+                <!-- Capture Method Selection -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                    <!-- Quick Capture (In-App Camera) -->
+                    <div id="quickCaptureBtn" class="capture-option" style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="selectQuickCapture()">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📸</div>
+                        <div style="font-weight: 700; margin-bottom: 0.5rem;">Quick Capture</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                            • In-app camera<br>
+                            • Instant & easy<br>
+                            • Starts at $1
+                        </div>
+                    </div>
+                    
+                    <!-- Pro Capture (Native Camera) -->
+                    <div id="proCaptureBtn" class="capture-option" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 61, 0, 0.1)); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="openProCapture()">
+                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📷</div>
+                        <div style="font-weight: 700; margin-bottom: 0.5rem;">
+                            Pro Capture <span style="font-size: 0.8rem;">⭐</span>
+                        </div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
+                            • Full camera features<br>
+                            • Photo & video<br>
+                            • Starts at $5+
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="quickCaptureSection" style="display: none;">
 
                 <!-- Camera Settings -->
                 <div class="camera-settings">
@@ -1528,9 +1588,16 @@
                 </div>
 
                 <!-- Camera View (Isolated for pinch-zoom) -->
-                <div class="camera-view">
+                <div class="camera-view" style="position: relative;">
                     <video id="videoPreview" autoplay playsinline muted></video>
                     <img id="capturedMedia" style="display: none;">
+                    
+                    <!-- Video Capture Success Overlay -->
+                    <div id="videoSuccessOverlay" class="video-success-overlay" style="display: none;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">Video Captured!</div>
+                        <div style="font-size: 0.9rem; font-family: 'Inter', sans-serif; opacity: 0.9;">Ready to list</div>
+                    </div>
                     
                     <!-- Grid Overlay -->
                     <div class="grid-overlay" id="gridOverlay">
@@ -1562,6 +1629,8 @@
                     <button class="record-btn" id="captureBtn"></button>
                     <button class="media-type-btn" id="mediaTypeBtn" onclick="toggleMediaType()">📷</button>
                 </div>
+                
+                </div><!-- End quickCaptureSection -->
 
                 <div id="contentForm" style="display: none;">
                     <div class="form-group">
@@ -1666,8 +1735,12 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label>Date & Time</label>
+                        <label>Start Date & Time</label>
                         <input type="datetime-local" id="eventDateTime" required>
+                    </div>
+                    <div class="form-group">
+                        <label>End Date & Time</label>
+                        <input type="datetime-local" id="eventEndTime" required>
                     </div>
                     <div class="form-group">
                         <label>Location</label>
@@ -1680,6 +1753,68 @@
                         Cancel
                     </button>
                 </form>
+            </div>
+        </section>
+        
+        <!-- Admin Dashboard Section -->
+        <section id="adminDashboardSection" class="section">
+            <div style="max-width: 1200px; margin: 0 auto;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem;">
+                        🔒 Admin Dashboard
+                    </h2>
+                    <button class="btn btn-ghost" onclick="showSection('dashboardSection')">
+                        ← Back to Auctions
+                    </button>
+                </div>
+                
+                <!-- Stats Overview -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Total Auctions</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-fire);" id="adminTotalAuctions">0</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Active Auctions</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="adminActiveAuctions">0</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Total Bids</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-gold);" id="adminTotalBids">0</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Total Volume</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-gold);" id="adminTotalVolume">$0</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Platform Revenue (20%)</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--success);" id="adminPlatformRevenue">$0</div>
+                    </div>
+                    <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem;">
+                        <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Premium Users</div>
+                        <div style="font-size: 2rem; font-weight: 700; color: var(--accent-gold);" id="adminPremiumUsers">0</div>
+                    </div>
+                </div>
+                
+                <!-- Content Moderation -->
+                <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+                    <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem;">
+                        Content Moderation
+                    </h3>
+                    <div id="adminAuctionsList">
+                        <!-- Auctions will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Log -->
+                <div style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 2rem;">
+                    <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1.5rem;">
+                        Recent Activity
+                    </h3>
+                    <div id="adminActivityLog" style="font-family: monospace; font-size: 0.875rem; max-height: 400px; overflow-y: auto;">
+                        <!-- Activity log will be populated here -->
+                    </div>
+                </div>
             </div>
         </section>
     </div>
@@ -1719,6 +1854,10 @@
         
         // Events storage
         let postedEvents = [];
+        
+        // Cloudinary Pro Capture
+        let cloudinaryWidget = null;
+        let isProCapture = false;
 
         // Audio feedback
         const captureSound = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiDUIFmm98OScTgwOUKvm87FdFwlFnd7wvmEcBS1+zO/biS8IGWu58+SaTBELUrDn9LJeFgpFnN/xwGIdBTSAy+3ciSYII2y589+UTREKUbDk9LRZFQpGm+Dxvl0bBzN9y+7biSgHI2y589+URhIKUa/k9LdYFAtFm9/xwF4bCDR8yezfiSMHJG268t6URBMJUq/l9LdYEwlGnN/xwWAbCTN8ye3biB8GJW+68t2RQxIJUq7m9LlXEwtGnN/xwWAdCTN7ye3bhx0GJ2+88tyQQhIIUq3m9LpWEwpGnt/xwl8dCDN7yO3bhBwGKXC98tuNQBIIUq3m9LxWEQpGnt/xxGAdBzN6x+3agxsGKnG+9dqLPRAHUqzn9L5WEQlEnODxxWIcBzN5xu3ZgRoGK3G/9dmJOw8GUqvm9MBVEAlEnODxyGMcBjJ5xe3ZgBkGLHHB9tiIOQ4FUarm9MJUDwhEneDxymQcBjJ4xOzYfhgGLXHD9deHNg0FUajm9MRUDQdDneDxzGUcBTF4w+zYfRYGLnHE9daGMwwEUKjl9MZUDAdDnuHx0GYcBDB3w+vXfBUGMHHF9dWEMQsFT6fk9MhTCwZCnuHx0WgcAy94wuvXehQFMXLG9dSCLgoFTqfk9cpTCgVBneLx1GobAy53wOrWeBMFM3LI9dOAKQkFTaXj9M1SCQVBneLx1m0bAix2v+rVdRIFNXPJ9dJ+JwgFTKTi9NBRBwQ/nOPx2G4aASp1vunUcxEFN3TK9dF8JQcES6Ph9NJRBgQ+m+Tx2nAaASl0venTcg8EOXXL9dB6IwYESaPh9NRQBgM9muPx3HIaACh0vOjSbw4EOXbM9c94IQUDSKLg9NZPBgI8mePx33MZACd0u+fSbQwDO3fN9c13HwQDR6Hf9NhPBQE6mOLx4XUZACVzuubRagsEPHjO9cx1HQMCSKDe9NpOBQA5l+Hx5HYZACRyueXRaAkDPnnP9ct0GwMCRp/d9NxOBQA3leDx5ngZACNxuOTQZQgEQHrQ9cp0GgICRZ7d9N5NBQA2lN/x6HkZACJwt+PQYwcEQnvR9clyGAEBRJ3c9OBNBAA0k97x6noY//9vtuLPYQYDRHzS9shxFgEBQpvb9OJNBP8zkt7x7HsY//5uu+HPXwQDRn7T9sdwFAAAQZra8+RMAwAykdzy7nwY//5tu+DPXQIDSIDo');
@@ -1781,6 +1920,7 @@
             loadAuctions();
             setupEventListeners();
             startAuctionTimers();
+            initCloudinaryWidget();
         });
 
         function setupEventListeners() {
@@ -1821,6 +1961,11 @@
                 loadEvents();
             }
             
+            // Load admin dashboard when showing admin section
+            if (sectionId === 'adminDashboardSection') {
+                loadAdminDashboard();
+            }
+            
             // Close mobile nav when navigating
             document.getElementById('mobileNav').classList.remove('active');
         }
@@ -1856,15 +2001,23 @@
                     container.innerHTML = userListings.map(auction => `
                         <div class="listing-card">
                             <div class="listing-header">
-                                <div>
+                                <div style="flex: 1;">
                                     <div style="font-weight: 700; margin-bottom: 0.5rem;">${auction.description}</div>
                                     <div style="color: var(--text-secondary); font-size: 0.875rem;">
                                         Current bid: <span style="color: var(--accent-gold); font-weight: 700;">$${auction.currentBid}</span> 
                                         • ${auction.bidCount} bids
                                     </div>
+                                    ${auction.bidCount > 0 ? `<div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 0.25rem;">⚠️ ${auction.bidCount} active bidder${auction.bidCount > 1 ? 's' : ''} will be notified if cancelled</div>` : ''}
                                 </div>
-                                <div class="listing-status ${auction.endTime > Date.now() ? 'active' : 'ended'}">
-                                    ${auction.endTime > Date.now() ? 'ACTIVE' : 'ENDED'}
+                                <div style="display: flex; align-items: center; gap: 1rem;">
+                                    <div class="listing-status ${auction.endTime > Date.now() ? 'active' : 'ended'}">
+                                        ${auction.endTime > Date.now() ? 'ACTIVE' : 'ENDED'}
+                                    </div>
+                                    ${auction.endTime > Date.now() ? `
+                                        <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--error); border-color: var(--error);" onclick="confirmCancelListing(${auction.id})">
+                                            Cancel Listing
+                                        </button>
+                                    ` : ''}
                                 </div>
                             </div>
                         </div>
@@ -1896,6 +2049,391 @@
                 }
             }
         }
+        
+        function confirmCancelListing(auctionId) {
+            const auction = auctions.find(a => a.id === auctionId);
+            if (!auction) return;
+            
+            const modal = document.getElementById('auctionModal');
+            const content = document.getElementById('modalContent');
+            
+            content.innerHTML = `
+                <button class="modal-close" onclick="closeModal()">✕</button>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                    <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 1.75rem; margin-bottom: 1rem;">
+                        Cancel This Listing?
+                    </h2>
+                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6;">
+                        "${auction.description}"
+                    </p>
+                    ${auction.bidCount > 0 ? `
+                        <div style="background: rgba(255, 61, 0, 0.1); border: 2px solid var(--accent-fire); border-radius: 12px; padding: 1rem; margin-bottom: 1.5rem;">
+                            <p style="color: var(--accent-fire); font-weight: 700; margin-bottom: 0.5rem;">
+                                ⚠️ Active Bidders Will Be Notified
+                            </p>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary);">
+                                ${auction.bidCount} bidder${auction.bidCount > 1 ? 's' : ''} will receive a notification that you cancelled this auction. Current bid: $${auction.currentBid}
+                            </p>
+                        </div>
+                    ` : ''}
+                    <div style="display: flex; gap: 1rem; justify-content: center;">
+                        <button class="btn btn-ghost" onclick="closeModal()">
+                            Keep Listing
+                        </button>
+                        <button class="btn btn-primary" style="background: var(--error); border-color: var(--error);" onclick="cancelListing(${auctionId})">
+                            Yes, Cancel Listing
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('active');
+        }
+        
+        function cancelListing(auctionId) {
+            const auctionIndex = auctions.findIndex(a => a.id === auctionId);
+            if (auctionIndex === -1) return;
+            
+            const auction = auctions[auctionIndex];
+            
+            // Log notification for bidders (in production, send actual notifications)
+            if (auction.bidCount > 0) {
+                console.log(`NOTIFICATION: Auction #${auctionId} cancelled by creator. ${auction.bidCount} bidder(s) notified.`);
+                console.log(`Message: "The auction for '${auction.description}' has been cancelled by the creator."`);
+            }
+            
+            // Remove auction from array
+            auctions.splice(auctionIndex, 1);
+            
+            closeModal();
+            showStatus('Listing cancelled successfully', 'success');
+            
+            // Refresh dashboard and main auction view
+            loadDashboardContent('myListings');
+            loadAuctions();
+        }
+        
+        // Admin Dashboard Functions
+        function loadAdminDashboard() {
+            if (!currentUser || !currentUser.isAdmin) {
+                showStatus('Admin access required', 'error');
+                showSection('dashboardSection');
+                return;
+            }
+            
+            // Calculate stats
+            const totalAuctions = auctions.length;
+            const activeAuctions = auctions.filter(a => a.endTime > Date.now()).length;
+            const totalBids = auctions.reduce((sum, a) => sum + a.bidCount, 0);
+            const totalVolume = auctions.reduce((sum, a) => sum + a.currentBid, 0);
+            const platformRevenue = totalVolume * 0.20;
+            const premiumUsers = 1; // Mock - would count from user database
+            
+            // Update stats
+            document.getElementById('adminTotalAuctions').textContent = totalAuctions;
+            document.getElementById('adminActiveAuctions').textContent = activeAuctions;
+            document.getElementById('adminTotalBids').textContent = totalBids;
+            document.getElementById('adminTotalVolume').textContent = `$${totalVolume.toFixed(2)}`;
+            document.getElementById('adminPlatformRevenue').textContent = `$${platformRevenue.toFixed(2)}`;
+            document.getElementById('adminPremiumUsers').textContent = premiumUsers;
+            
+            // Load auctions for moderation
+            loadAdminAuctions();
+            
+            // Load activity log
+            loadActivityLog();
+        }
+        
+        function loadAdminAuctions() {
+            const container = document.getElementById('adminAuctionsList');
+            
+            if (auctions.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No auctions to moderate</p>';
+                return;
+            }
+            
+            const sortedAuctions = [...auctions].sort((a, b) => b.id - a.id); // Newest first
+            
+            container.innerHTML = sortedAuctions.map(auction => `
+                <div style="background: var(--bg-dark); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: start; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; gap: 1rem; align-items: center; margin-bottom: 0.5rem;">
+                                <span style="font-family: monospace; color: var(--text-secondary); font-size: 0.75rem;">#${auction.id}</span>
+                                <span style="font-weight: 700;">${auction.description}</span>
+                                ${auction.isPremiumContent ? '<span class="premium-badge" style="font-size: 0.7rem; padding: 0.25rem 0.5rem;">⭐ PREMIUM</span>' : ''}
+                                ${auction.certificateMetadata ? '<span style="font-size: 0.7rem; padding: 0.25rem 0.5rem; background: rgba(255, 215, 0, 0.2); color: var(--accent-gold); border-radius: 4px;">🏆 CERTIFIED</span>' : ''}
+                            </div>
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                                <span>Creator: <strong>@${auction.creator}</strong></span>
+                                <span>Bid: <strong style="color: var(--accent-gold);">$${auction.currentBid}</strong></span>
+                                <span>Bids: <strong>${auction.bidCount}</strong></span>
+                                <span>Status: <strong style="color: ${auction.endTime > Date.now() ? 'var(--success)' : 'var(--text-secondary)'};">${auction.endTime > Date.now() ? 'ACTIVE' : 'ENDED'}</strong></span>
+                                <span>Type: <strong>${auction.mediaType}</strong></span>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="openAuctionModal(${auction.id})">
+                                View
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.85rem; background: var(--error); border-color: var(--error);" onclick="adminRemoveListing(${auction.id})">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function adminRemoveListing(auctionId) {
+            if (!confirm('Admin: Remove this listing? This action cannot be undone.')) return;
+            
+            const auctionIndex = auctions.findIndex(a => a.id === auctionId);
+            if (auctionIndex === -1) return;
+            
+            const auction = auctions[auctionIndex];
+            
+            // Log for activity
+            console.log(`ADMIN ACTION: Removed auction #${auctionId} - "${auction.description}" by @${auction.creator}`);
+            
+            // Notify affected users (mock)
+            if (auction.bidCount > 0) {
+                console.log(`NOTIFICATION: ${auction.bidCount} bidder(s) notified that listing was removed by admin.`);
+            }
+            
+            auctions.splice(auctionIndex, 1);
+            showStatus('Listing removed by admin', 'success');
+            loadAdminDashboard();
+            loadAuctions();
+        }
+        
+        function loadActivityLog() {
+            const container = document.getElementById('adminActivityLog');
+            
+            // Mock activity log (in production, this would come from backend)
+            const activities = [
+                { time: new Date(), action: 'Auction #1 created by @NewsHunter', type: 'auction' },
+                { time: new Date(Date.now() - 300000), action: 'Bid placed on Auction #2: $47', type: 'bid' },
+                { time: new Date(Date.now() - 600000), action: 'User @StreetPhotog upgraded to Premium', type: 'premium' },
+                { time: new Date(Date.now() - 900000), action: 'Auction #3 ended - Winner: @Collector123', type: 'auction' },
+                { time: new Date(Date.now() - 1200000), action: 'New user registered: @NewPhotographer', type: 'user' }
+            ];
+            
+            container.innerHTML = activities.map(activity => {
+                const timeStr = activity.time.toLocaleTimeString();
+                const color = {
+                    auction: 'var(--accent-fire)',
+                    bid: 'var(--accent-gold)',
+                    premium: 'var(--success)',
+                    user: 'var(--info)'
+                }[activity.type];
+                
+                return `<div style="padding: 0.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem;">
+                    <span style="color: ${color}; min-width: 80px;">[${timeStr}]</span>
+                    <span>${activity.action}</span>
+                </div>`;
+            }).join('');
+        }
+        
+        // ========================================
+        // CLOUDINARY PRO CAPTURE FUNCTIONS
+        // ========================================
+        
+        function initCloudinaryWidget() {
+            // Cloudinary Pro Capture Configuration
+            cloudinaryWidget = cloudinary.createUploadWidget({
+                cloudName: 'dtfymlzzr', // Your Cloudinary cloud name
+                uploadPreset: 'pro_capture', // NOTE: You need to create this preset in Cloudinary dashboard
+                sources: ['camera'], // ONLY camera - no gallery, files, etc.
+                multiple: false,
+                resourceType: 'auto', // Handles both photos AND videos
+                clientAllowedFormats: ['jpg', 'jpeg', 'png', 'mp4', 'webm', 'mov'],
+                maxFileSize: 100000000, // 100MB max
+                maxVideoFileSize: 100000000,
+                cropping: false,
+                showSkipCropButton: true,
+                
+                // Custom styling to match ReelAuction brand
+                styles: {
+                    palette: {
+                        window: "#1a1a1a",
+                        windowBorder: "#ff3d00",
+                        tabIcon: "#ffd700",
+                        menuIcons: "#ffffff",
+                        textDark: "#ffffff",
+                        textLight: "#cccccc",
+                        link: "#ff3d00",
+                        action: "#ff3d00",
+                        inactiveTabIcon: "#666666",
+                        error: "#ff0000",
+                        inProgress: "#ffd700",
+                        complete: "#00ff88",
+                        sourceBg: "#2a2a2a"
+                    },
+                    fonts: {
+                        default: null,
+                        "'Archivo Black', sans-serif": {
+                            url: "https://fonts.googleapis.com/css2?family=Archivo+Black",
+                            active: true
+                        }
+                    }
+                },
+                
+                // Custom text
+                text: {
+                    en: {
+                        or: "or",
+                        menu: {
+                            files: "Capture Pro Content"
+                        },
+                        camera: {
+                            capture: "Capture",
+                            cancel: "Cancel",
+                            take_pic: "Take Photo",
+                            explanation: "Capture authentic content with full camera features"
+                        }
+                    }
+                }
+            }, handleCloudinaryUpload);
+        }
+        
+        function openProCapture() {
+            if (!currentUser) {
+                showStatus('Please login to create content', 'error');
+                showSection('loginSection');
+                return;
+            }
+            
+            if (!cloudinaryWidget) {
+                initCloudinaryWidget();
+            }
+            
+            isProCapture = true;
+            cloudinaryWidget.open();
+        }
+        
+        function selectQuickCapture() {
+            isProCapture = false;
+            document.getElementById('quickCaptureSection').style.display = 'block';
+            document.getElementById('quickCaptureBtn').style.borderColor = 'var(--accent-fire)';
+            document.getElementById('proCaptureBtn').style.borderColor = 'var(--border)';
+            initCamera();
+        }
+        
+        async function handleCloudinaryUpload(error, result) {
+            if (error) {
+                console.error('Cloudinary upload error:', error);
+                showStatus('Upload failed. Please try again.', 'error');
+                return;
+            }
+            
+            if (result && result.event === 'success') {
+                const info = result.info;
+                const mediaType = info.resource_type; // 'image' or 'video'
+                const mediaUrl = info.secure_url;
+                
+                // Validate timestamp (server-side, can't fake!)
+                const uploadedAt = new Date(info.created_at);
+                const secondsAgo = (Date.now() - uploadedAt) / 1000;
+                
+                if (secondsAgo > 60) {
+                    showStatus('Content must be uploaded within 60 seconds of capture', 'error');
+                    return;
+                }
+                
+                // Check for duplicates using Cloudinary's unique hash
+                const imageHash = info.etag;
+                const isDuplicate = auctions.some(a => a.certificateMetadata && a.certificateMetadata.hash === imageHash);
+                
+                if (isDuplicate) {
+                    showStatus('This content has already been uploaded', 'error');
+                    return;
+                }
+                
+                // Extract EXIF metadata if available
+                const exifData = info.image_metadata || {};
+                const gps = {
+                    lat: exifData.GPSLatitude || null,
+                    lng: exifData.GPSLongitude || null
+                };
+                
+                // If no GPS in EXIF, try to get current location
+                if (!gps.lat || !gps.lng) {
+                    try {
+                        const position = await getCurrentPosition();
+                        gps.lat = position.coords.latitude;
+                        gps.lng = position.coords.longitude;
+                    } catch (e) {
+                        console.log('GPS not available');
+                    }
+                }
+                
+                // Create enhanced certificate metadata
+                captureMetadata = {
+                    timestamp: info.created_at,
+                    uploadTimestamp: uploadedAt.toISOString(),
+                    gps: gps,
+                    hash: imageHash,
+                    camera: exifData.Make ? `${exifData.Make} ${exifData.Model || ''}`.trim() : 'Unknown',
+                    verified: true,
+                    serverTimestamp: true, // Flag that this is server-verified
+                    isoPro: exifData.ISOSpeed,
+                    aperture: exifData.FNumber,
+                    shutterSpeed: exifData.ExposureTime,
+                    focalLength: exifData.FocalLength,
+                    width: info.width,
+                    height: info.height,
+                    duration: info.duration || null // For videos
+                };
+                
+                // Set the media URL (Cloudinary CDN URL)
+                capturedBlob = mediaUrl;
+                
+                // Show success based on media type
+                if (mediaType === 'video') {
+                    document.getElementById('videoSuccessOverlay').style.display = 'flex';
+                    // Set video element for potential playback
+                    const videoEl = document.createElement('video');
+                    videoEl.src = mediaUrl;
+                    videoEl.controls = true;
+                    videoEl.style.width = '100%';
+                    videoEl.style.maxHeight = '50vh';
+                } else {
+                    // Show photo
+                    const imgEl = document.getElementById('capturedMedia');
+                    imgEl.src = mediaUrl;
+                    imgEl.style.display = 'block';
+                    document.getElementById('videoPreview').style.display = 'none';
+                }
+                
+                // Show content form
+                document.getElementById('contentForm').style.display = 'block';
+                
+                // Set premium starting bid option if user is premium
+                if (currentUser.isPremium) {
+                    document.getElementById('startingBidGroup').style.display = 'block';
+                }
+                
+                showStatus(`✓ Pro ${mediaType} captured! Server-verified timestamp.`, 'success');
+                
+                console.log('Pro Capture Metadata:', captureMetadata);
+            }
+        }
+        
+        function getCurrentPosition() {
+            return new Promise((resolve, reject) => {
+                if (!navigator.geolocation) {
+                    reject(new Error('Geolocation not supported'));
+                    return;
+                }
+                navigator.geolocation.getCurrentPosition(resolve, reject, {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                });
+            });
+        }
 
         function handleLogin(e) {
             e.preventDefault();
@@ -1909,7 +2447,8 @@
                 email: email,
                 role: 'creator',
                 balance: 125.50,
-                isPremium: false
+                isPremium: false,
+                isAdmin: email === 'admin@reelauction.com' // Admin access for this email
             };
 
             // Save user to localStorage for session persistence
@@ -1917,7 +2456,7 @@
 
             updateUserInterface();
             showSection('dashboardSection');
-            showStatus('Welcome back!', 'success');
+            showStatus(currentUser.isAdmin ? 'Welcome back, Admin!' : 'Welcome back!', 'success');
         }
 
         function handleRegister(e) {
@@ -1963,6 +2502,13 @@
                 document.getElementById('userBalance').textContent = `$${currentUser.balance.toFixed(2)}`;
                 document.getElementById('userRole').textContent = currentUser.role.toUpperCase();
 
+                // Show admin dashboard if user is admin
+                if (currentUser.isAdmin) {
+                    document.getElementById('navAdminDashboard').style.display = 'block';
+                } else {
+                    document.getElementById('navAdminDashboard').style.display = 'none';
+                }
+
                 // Show menu items based on role
                 if (currentUser.role === 'creator' || currentUser.role === 'both') {
                     document.getElementById('navCreateContent').style.display = 'block';
@@ -1986,6 +2532,7 @@
                 document.getElementById('navCreateContent').style.display = 'none';
                 document.getElementById('navPostEvent').style.display = 'none';
                 document.getElementById('navUpgrade').style.display = 'none';
+                document.getElementById('navAdminDashboard').style.display = 'none';
                 document.getElementById('creatorQuickActions').style.display = 'none';
             }
         }
@@ -2064,9 +2611,11 @@
                             : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
                         }
                         <div class="watermark">REELAUCTION</div>
-                        ${auction.isPremiumContent && auction.startingBid > 1 
-                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
-                            : ''
+                        ${auction.isProCapture 
+                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold)); color: #fff; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">📷 PRO QUALITY</div>`
+                            : auction.isPremiumContent && auction.startingBid > 1 
+                                ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
+                                : ''
                         }
                         ${auction.certificateMetadata 
                             ? `<div style="position: absolute; top: 1rem; left: 1rem; background: rgba(0, 0, 0, 0.8); color: var(--accent-gold); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--accent-gold);">🏆 CERTIFIED</div>`
@@ -2133,9 +2682,10 @@
                 document.querySelectorAll('.auction-timer').forEach(timer => {
                     const endTime = parseInt(timer.dataset.end);
                     const remaining = Math.max(0, endTime - Date.now());
-                    const minutes = Math.floor(remaining / 60000);
+                    const hours = Math.floor(remaining / 3600000);
+                    const minutes = Math.floor((remaining % 3600000) / 60000);
                     const seconds = Math.floor((remaining % 60000) / 1000);
-                    timer.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    timer.textContent = `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
                     
                     if (remaining === 0) {
                         timer.textContent = 'ENDED';
@@ -2678,7 +3228,11 @@
                     
                     const url = URL.createObjectURL(capturedBlob);
                     
-                    // Show success message
+                    // Show video success overlay
+                    document.getElementById('videoSuccessOverlay').style.display = 'flex';
+                    document.getElementById('videoPreview').style.display = 'none';
+                    
+                    // Show success message briefly
                     const successMsg = document.getElementById('captureSuccessMessage');
                     successMsg.textContent = '✓ Video Captured!';
                     successMsg.style.display = 'block';
@@ -2687,9 +3241,12 @@
                         successMsg.textContent = '✓ Content Captured!';
                     }, 1500);
                     
-                    document.getElementById('capturedMedia').src = url;
-                    document.getElementById('capturedMedia').style.display = 'block';
-                    document.getElementById('videoPreview').style.display = 'none';
+                    // Set the video element for playback later
+                    const capturedVideo = document.getElementById('capturedMedia');
+                    capturedVideo.src = url;
+                    capturedVideo.controls = true;
+                    capturedVideo.style.display = 'none'; // Keep hidden, show overlay instead
+                    
                     document.getElementById('contentForm').style.display = 'block';
                     
                     if (mediaStream) {
@@ -2755,8 +3312,13 @@
             document.getElementById('contentDescription').value = '';
             document.getElementById('charCount').textContent = '0';
             document.getElementById('startingBidInput').value = '1';
+            document.getElementById('videoSuccessOverlay').style.display = 'none';
+            document.getElementById('quickCaptureSection').style.display = 'none';
+            document.getElementById('quickCaptureBtn').style.borderColor = 'var(--border)';
+            document.getElementById('proCaptureBtn').style.borderColor = 'var(--border)';
             capturedBlob = null;
-            initCamera();
+            captureMetadata = null;
+            isProCapture = false;
         }
 
         function submitContent() {
@@ -2783,20 +3345,36 @@
                 }
             }
 
+            // Determine media URL based on capture method
+            let mediaUrl;
+            let mediaTypeValue;
+            
+            if (isProCapture) {
+                // Pro Capture: capturedBlob is already a Cloudinary URL
+                mediaUrl = capturedBlob;
+                // Detect type from metadata or URL
+                mediaTypeValue = captureMetadata && captureMetadata.duration ? 'video' : 'image';
+            } else {
+                // Quick Capture: capturedBlob is a Blob object
+                mediaUrl = URL.createObjectURL(capturedBlob);
+                mediaTypeValue = mediaType === 'photo' ? 'image' : 'video';
+            }
+
             // Mock content submission (replace with real upload to backend)
             const newAuction = {
                 id: Date.now(),
                 creator: currentUser.name,
                 creatorId: currentUser.id,
                 description: description,
-                mediaUrl: URL.createObjectURL(capturedBlob),
-                mediaType: mediaType === 'photo' ? 'image' : 'video',
+                mediaUrl: mediaUrl,
+                mediaType: mediaTypeValue,
                 currentBid: startingBid,
                 startingBid: startingBid, // Track original starting bid
                 bidCount: 0,
                 endTime: Date.now() + 86400000, // 24 hours from now
                 timestamp: Date.now(),
-                isPremiumContent: currentUser.isPremium,
+                isPremiumContent: currentUser.isPremium || isProCapture, // Pro Capture gets premium badge
+                isProCapture: isProCapture, // Flag for Pro Capture
                 // CERTIFICATE OF AUTHENTICITY DATA
                 certificateMetadata: captureMetadata
             };
@@ -2811,10 +3389,11 @@
             showSection('dashboardSection');
             loadAuctions();
             
+            const captureMethod = isProCapture ? 'Pro Capture' : 'Quick Capture';
             if (currentUser.isPremium && startingBid > 1) {
-                showStatus(`Content listed with Certificate of Authenticity! Starting bid: $${startingBid}`, 'success');
+                showStatus(`${captureMethod} listed with Certificate! Starting bid: $${startingBid}`, 'success');
             } else {
-                showStatus('Content listed with Certificate of Authenticity! Auction starts now.', 'success');
+                showStatus(`${captureMethod} listed with Certificate! Auction starts now.`, 'success');
             }
             
             resetCamera();
@@ -2920,6 +3499,7 @@ Content Hash: ${metadata.contentHash}
 
             const description = document.getElementById('eventDescription').value;
             const dateTime = document.getElementById('eventDateTime').value;
+            const endTime = document.getElementById('eventEndTime').value;
             const location = document.getElementById('eventLocation').value;
 
             // Create new event
@@ -2928,6 +3508,7 @@ Content Hash: ${metadata.contentHash}
                 creator: currentUser.name,
                 description: description,
                 dateTime: new Date(dateTime),
+                endTime: new Date(endTime),
                 location: location,
                 postedAt: new Date()
             };
@@ -2998,6 +3579,7 @@ Content Hash: ${metadata.contentHash}
             
             const eventsHTML = sortedEvents.map(event => {
                 const eventDate = new Date(event.dateTime);
+                const eventEndDate = event.endTime ? new Date(event.endTime) : null;
                 const timeUntilEvent = eventDate - now;
                 
                 // Determine event status
@@ -3010,14 +3592,38 @@ Content Hash: ${metadata.contentHash}
                     badgeColor = 'var(--accent-fire)';
                 }
                 
-                // Format date/time
-                const formattedDate = eventDate.toLocaleString('en-US', {
+                // Format start time
+                const formattedStartTime = eventDate.toLocaleString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     hour: 'numeric',
                     minute: '2-digit',
                     hour12: true
                 });
+                
+                // Format end time if available
+                let timeRange = formattedStartTime;
+                if (eventEndDate) {
+                    const formattedEndTime = eventEndDate.toLocaleString('en-US', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                        hour12: true,
+                        timeZoneName: 'short'
+                    });
+                    // Check if same day
+                    if (eventDate.toDateString() === eventEndDate.toDateString()) {
+                        // Same day - show time range: "Jan 29, 9:00 AM - 12:00 PM PST"
+                        const startTime = eventDate.toLocaleString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                        });
+                        timeRange = `${eventDate.toLocaleString('en-US', {month: 'short', day: 'numeric'})}, ${startTime} - ${formattedEndTime}`;
+                    } else {
+                        // Different days - show full range
+                        timeRange = `${formattedStartTime} - ${formattedEndTime}`;
+                    }
+                }
                 
                 // Calculate time until event
                 let timeUntilText = '';
@@ -3048,7 +3654,7 @@ Content Hash: ${metadata.contentHash}
                             ${event.description}
                         </div>
                         <div class="event-time">
-                            📅 ${formattedDate} • 🌎 ${event.location}${timeUntilText}
+                            📅 ${timeRange} • 🌎 ${event.location}${timeUntilText}
                         </div>
                     </div>
                 `;
@@ -3067,7 +3673,7 @@ Content Hash: ${metadata.contentHash}
                     <div class="event-description">
                         I'll be covering the tech conference tomorrow morning. Expecting exclusive interviews and product launches.
                     </div>
-                    <div class="event-time">📅 Tomorrow, 9:00 AM PST • 🌎 San Francisco</div>
+                    <div class="event-time">📅 Tomorrow, 9:00 AM - 5:00 PM PST • 🌎 San Francisco</div>
                 </div>
 
                 <div class="event-card">
@@ -3081,7 +3687,7 @@ Content Hash: ${metadata.contentHash}
                     <div class="event-description">
                         Currently at the music festival capturing performances. Will post exclusive backstage content throughout the evening.
                     </div>
-                    <div class="event-time">📅 Today, 6:00 PM PST • 🌎 Los Angeles</div>
+                    <div class="event-time">📅 Today, 6:00 PM - 11:00 PM PST • 🌎 Los Angeles</div>
                 </div>
             `;
         }
