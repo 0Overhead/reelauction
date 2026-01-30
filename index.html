@@ -2309,13 +2309,17 @@
                 const input = document.createElement('input');
                 input.type = 'file';
                 input.accept = 'image/*,video/*';
-                input.capture = 'environment'; // Use back camera
+                // Removed capture="environment" - it may cause issues on some devices
+                input.setAttribute('capture', ''); // Empty capture = works on more devices
                 
                 debugLog('📸 File input created, setting onchange handler');
                 
                 input.onchange = async (e) => {
-                    debugLog('📸 File selected from camera');
+                    debugLog('📸 ONCHANGE TRIGGERED!');
                     const file = e.target.files[0];
+                    
+                    debugLog('📸 Checking if file exists...', { fileExists: !!file });
+                    
                     if (!file) {
                         debugLog('❌ No file selected');
                         showStatus('No file selected', 'error');
@@ -2335,9 +2339,25 @@
                     await uploadToCloudinary(file);
                 };
                 
+                // Also add onerror handler
+                input.onerror = (e) => {
+                    debugLog('❌ Input error', { error: e });
+                };
+                
+                // Also add oncancel handler
+                input.oncancel = () => {
+                    debugLog('⚠️ User cancelled file selection');
+                    showStatus('Capture cancelled', 'info');
+                };
+                
                 // Trigger file picker (opens camera on mobile)
                 debugLog('📸 Clicking file input to open camera');
                 input.click();
+                
+                // Add debug after a delay to see if anything happens
+                setTimeout(() => {
+                    debugLog('⏰ 2 seconds elapsed - waiting for file selection...');
+                }, 2000);
                 
             } catch (error) {
                 debugLog('❌ Camera error', { error: error.message });
