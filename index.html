@@ -1504,39 +1504,52 @@
                     Create Content
                 </h2>
                 <p style="text-align: center; color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 0.9rem;">
-                    Choose your capture method
+                    Capture authentic photos and videos with your device's camera
                 </p>
                 
-                <!-- Capture Method Selection -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
-                    <!-- Quick Capture (In-App Camera) -->
-                    <div id="quickCaptureBtn" class="capture-option" style="background: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="selectQuickCapture()">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📸</div>
-                        <div style="font-weight: 700; margin-bottom: 0.5rem;">Quick Capture</div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-                            • In-app camera<br>
-                            • Instant & easy<br>
-                            • Starts at $1
-                        </div>
+                <!-- Single Capture Button -->
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <button class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="openProCapture()">
+                        <span style="font-size: 1.5rem;">📸</span>
+                        Capture Photo/Video
+                    </button>
+                    <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.75rem;">
+                        Full camera features • Server-verified timestamps • Certificate of Authenticity
+                    </p>
+                </div>
+
+                <!-- Camera View (hidden until capture) -->
+                <div class="camera-view" style="position: relative; display: none;" id="cameraPreviewSection">
+                    <video id="videoPreview" autoplay playsinline muted></video>
+                    <img id="capturedMedia" style="display: none;">
+                    
+                    <!-- Video Capture Success Overlay -->
+                    <div id="videoSuccessOverlay" class="video-success-overlay" style="display: none;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">✓</div>
+                        <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">Content Captured!</div>
+                        <div style="font-size: 0.9rem; font-family: 'Inter', sans-serif; opacity: 0.9;">Server-verified and ready to list</div>
                     </div>
                     
-                    <!-- Pro Capture (Native Camera) -->
-                    <div id="proCaptureBtn" class="capture-option" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 61, 0, 0.1)); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 1.5rem; text-align: center; cursor: pointer; transition: all 0.3s;" onclick="openProCapture()">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">📷</div>
-                        <div style="font-weight: 700; margin-bottom: 0.5rem;">
-                            Pro Capture <span style="font-size: 0.8rem;">⭐</span>
-                        </div>
-                        <div style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.4;">
-                            • Full camera features<br>
-                            • Photo & video<br>
-                            • Starts at $5+
-                        </div>
+                    <!-- Grid Overlay (not used with Pro Capture but keeping for compatibility) -->
+                    <div class="grid-overlay" id="gridOverlay">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <line x1="33.33" y1="0" x2="33.33" y2="100" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.5"/>
+                            <line x1="66.66" y1="0" x2="66.66" y2="100" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.5"/>
+                            <line x1="0" y1="33.33" x2="100" y2="33.33" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.5"/>
+                            <line x1="0" y1="66.66" x2="100" y2="66.66" stroke="rgba(255, 255, 255, 0.3)" stroke-width="0.5"/>
+                        </svg>
                     </div>
-                </div>
-                
-                <div id="quickCaptureSection" style="display: none;">
-
-                <!-- Camera Settings -->
+                    
+                    <!-- Timer Countdown (not used with Pro Capture) -->
+                    <div class="timer-countdown" id="timerCountdown">3</div>
+                    
+                    <!-- Recording Time Display (not used with Pro Capture) -->
+                    <div class="recording-time" id="recordingTime">⏺ 00:00</div>
+                    
+                    <!-- Old timer (hidden now) -->
+                    <div class="camera-overlay" id="cameraTimer" style="display: none;">00:00</div>
+                    
+                    <div id="captureSuccessMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 255, 136, 0.95); color: #000; padding: 1.5rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-align: center;">
                 <div class="camera-settings">
                     <div class="settings-row">
                         <span class="settings-label">Resolution</span>
@@ -1612,7 +1625,7 @@
                     <!-- Timer Countdown -->
                     <div class="timer-countdown" id="timerCountdown">3</div>
                     
-                    <!-- Recording Time Display -->
+                    <!-- Recording Time Display (not used with Pro Capture) -->
                     <div class="recording-time" id="recordingTime">⏺ 00:00</div>
                     
                     <!-- Old timer (hidden now) -->
@@ -1621,17 +1634,9 @@
                     <div id="captureSuccessMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0, 255, 136, 0.95); color: #000; padding: 1.5rem 2rem; border-radius: 12px; font-weight: 700; font-size: 1.1rem; text-align: center;">
                         ✓ Content Captured!
                     </div>
-                </div>
+                </div><!-- End cameraPreviewSection -->
 
-                <!-- Camera Controls (Separate from zoom area) -->
-                <div class="camera-controls">
-                    <button class="camera-switch-btn" onclick="switchCamera()">🔄</button>
-                    <button class="record-btn" id="captureBtn"></button>
-                    <button class="media-type-btn" id="mediaTypeBtn" onclick="toggleMediaType()">📷</button>
-                </div>
-                
-                </div><!-- End quickCaptureSection -->
-
+                <!-- Content Description Form -->
                 <div id="contentForm" style="display: none;">
                     <div class="form-group">
                         <label>Description (Max 160 characters)</label>
@@ -2313,14 +2318,6 @@
             cloudinaryWidget.open();
         }
         
-        function selectQuickCapture() {
-            isProCapture = false;
-            document.getElementById('quickCaptureSection').style.display = 'block';
-            document.getElementById('quickCaptureBtn').style.borderColor = 'var(--accent-fire)';
-            document.getElementById('proCaptureBtn').style.borderColor = 'var(--border)';
-            initCamera();
-        }
-        
         async function handleCloudinaryUpload(error, result) {
             if (error) {
                 console.error('Cloudinary upload error:', error);
@@ -2611,11 +2608,9 @@
                             : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
                         }
                         <div class="watermark">REELAUCTION</div>
-                        ${auction.isProCapture 
-                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-fire), var(--accent-gold)); color: #fff; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">📷 PRO QUALITY</div>`
-                            : auction.isPremiumContent && auction.startingBid > 1 
-                                ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
-                                : ''
+                        ${auction.isPremiumContent && auction.startingBid > 1 
+                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
+                            : ''
                         }
                         ${auction.certificateMetadata 
                             ? `<div style="position: absolute; top: 1rem; left: 1rem; background: rgba(0, 0, 0, 0.8); color: var(--accent-gold); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--accent-gold);">🏆 CERTIFIED</div>`
@@ -3313,9 +3308,7 @@
             document.getElementById('charCount').textContent = '0';
             document.getElementById('startingBidInput').value = '1';
             document.getElementById('videoSuccessOverlay').style.display = 'none';
-            document.getElementById('quickCaptureSection').style.display = 'none';
-            document.getElementById('quickCaptureBtn').style.borderColor = 'var(--border)';
-            document.getElementById('proCaptureBtn').style.borderColor = 'var(--border)';
+            document.getElementById('cameraPreviewSection').style.display = 'none';
             capturedBlob = null;
             captureMetadata = null;
             isProCapture = false;
@@ -3333,7 +3326,7 @@
                 return;
             }
 
-            // Get starting bid (premium users can set custom, others default to $1)
+            // Get starting bid - Premium users can set custom, non-premium always $1
             let startingBid = 1;
             if (currentUser.isPremium) {
                 const customBid = parseInt(document.getElementById('startingBidInput').value);
@@ -3345,22 +3338,12 @@
                 }
             }
 
-            // Determine media URL based on capture method
-            let mediaUrl;
-            let mediaTypeValue;
-            
-            if (isProCapture) {
-                // Pro Capture: capturedBlob is already a Cloudinary URL
-                mediaUrl = capturedBlob;
-                // Detect type from metadata or URL
-                mediaTypeValue = captureMetadata && captureMetadata.duration ? 'video' : 'image';
-            } else {
-                // Quick Capture: capturedBlob is a Blob object
-                mediaUrl = URL.createObjectURL(capturedBlob);
-                mediaTypeValue = mediaType === 'photo' ? 'image' : 'video';
-            }
+            // Pro Capture: capturedBlob is a Cloudinary URL
+            const mediaUrl = capturedBlob;
+            // Detect type from metadata or URL
+            const mediaTypeValue = captureMetadata && captureMetadata.duration ? 'video' : 'image';
 
-            // Mock content submission (replace with real upload to backend)
+            // Create auction
             const newAuction = {
                 id: Date.now(),
                 creator: currentUser.name,
@@ -3369,12 +3352,12 @@
                 mediaUrl: mediaUrl,
                 mediaType: mediaTypeValue,
                 currentBid: startingBid,
-                startingBid: startingBid, // Track original starting bid
+                startingBid: startingBid,
                 bidCount: 0,
                 endTime: Date.now() + 86400000, // 24 hours from now
                 timestamp: Date.now(),
-                isPremiumContent: currentUser.isPremium || isProCapture, // Pro Capture gets premium badge
-                isProCapture: isProCapture, // Flag for Pro Capture
+                isPremiumContent: currentUser.isPremium,
+                isProCapture: true, // All content is now Pro Capture
                 // CERTIFICATE OF AUTHENTICITY DATA
                 certificateMetadata: captureMetadata
             };
@@ -3389,11 +3372,10 @@
             showSection('dashboardSection');
             loadAuctions();
             
-            const captureMethod = isProCapture ? 'Pro Capture' : 'Quick Capture';
             if (currentUser.isPremium && startingBid > 1) {
-                showStatus(`${captureMethod} listed with Certificate! Starting bid: $${startingBid}`, 'success');
+                showStatus(`Content listed with Certificate! Starting bid: $${startingBid}`, 'success');
             } else {
-                showStatus(`${captureMethod} listed with Certificate! Auction starts now.`, 'success');
+                showStatus('Content listed with Certificate! Auction starts now at $1.', 'success');
             }
             
             resetCamera();
