@@ -647,7 +647,6 @@
         .auction-media {
             position: relative;
             width: 100%;
-            aspect-ratio: 1;
             background: #000;
             overflow: hidden;
         }
@@ -672,15 +671,18 @@
         }
 
         .auction-timer {
+            font-weight: 700;
+            font-size: 0.875rem;
+            color: var(--accent-fire);
+        }
+        
+        .auction-media .auction-timer {
             position: absolute;
             top: 1rem;
             left: 1rem;
             background: rgba(0, 0, 0, 0.8);
             padding: 0.5rem 0.75rem;
             border-radius: 8px;
-            font-weight: 700;
-            font-size: 0.875rem;
-            color: var(--accent-fire);
         }
 
         .auction-info {
@@ -1228,7 +1230,7 @@
                         <div style="font-size: 3rem;">⚡</div>
                         <div>
                             <h3 style="font-size: 1.3rem; margin-bottom: 0.5rem;">Real-Time Marketplace</h3>
-                            <p style="color: var(--text-secondary); line-height: 1.6;">Capture breaking moments and list them instantly. 1-hour auctions create urgency and competitive bidding, maximizing your earnings.</p>
+                            <p style="color: var(--text-secondary); line-height: 1.6;">Capture breaking moments and list them instantly. 24-hour auctions create urgency and competitive bidding, maximizing your earnings.</p>
                         </div>
                     </div>
                     
@@ -1274,7 +1276,7 @@
                     <div>
                         <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔥</div>
                         <h3 style="margin-bottom: 0.5rem;">Auction</h3>
-                        <p style="color: var(--text-secondary); font-size: 0.9rem;">1-hour live auction starting at $1</p>
+                        <p style="color: var(--text-secondary); font-size: 0.9rem;">24-hour live auction starting at $1</p>
                     </div>
                     <div>
                         <div style="font-size: 3rem; margin-bottom: 0.5rem;">💰</div>
@@ -1996,10 +1998,65 @@
                 return;
             }
 
-            // Sort by time remaining (soonest expiring first)
-            const sortedAuctions = [...auctions].sort((a, b) => a.endTime - b.endTime);
+            const now = Date.now();
+            
+            // Categorize auctions
+            const expiringSoon = auctions.filter(a => (a.endTime - now) < 21600000).sort((a, b) => a.endTime - b.endTime); // < 6 hours
+            const popular = auctions.filter(a => a.bidCount >= Math.max(...auctions.map(x => x.bidCount)) * 0.1).sort((a, b) => b.bidCount - a.bidCount).slice(0, 10); // Top 10% by bids
+            const remaining = auctions.filter(a => !expiringSoon.includes(a) && !popular.includes(a)).sort((a, b) => a.endTime - b.endTime);
 
-            container.innerHTML = sortedAuctions.map(auction => `
+            let html = '';
+            
+            // Expiring Soon Section
+            if (expiringSoon.length > 0) {
+                html += `
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent-fire); display: flex; align-items: center; gap: 0.5rem;">
+                            ⏰ Expiring Soon
+                            <span style="font-size: 0.75rem; background: var(--accent-fire); color: white; padding: 0.25rem 0.75rem; border-radius: 100px; font-weight: 700;">${expiringSoon.length}</span>
+                        </h3>
+                        <div class="auction-grid">
+                            ${renderAuctions(expiringSoon)}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Popular Listings Section
+            if (popular.length > 0) {
+                html += `
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--accent-gold); display: flex; align-items: center; gap: 0.5rem;">
+                            🔥 Popular Listings
+                            <span style="font-size: 0.75rem; background: var(--accent-gold); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-weight: 700;">${popular.length}</span>
+                        </h3>
+                        <div class="auction-grid">
+                            ${renderAuctions(popular)}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // All Other Auctions
+            if (remaining.length > 0) {
+                html += `
+                    <div>
+                        <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+                            📋 All Auctions
+                            <span style="font-size: 0.75rem; background: var(--bg-dark); color: var(--text-secondary); padding: 0.25rem 0.75rem; border-radius: 100px; font-weight: 700;">${remaining.length}</span>
+                        </h3>
+                        <div class="auction-grid">
+                            ${renderAuctions(remaining)}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML = html;
+        }
+        
+        function renderAuctions(auctionList) {
+            return auctionList.map(auction => `
                 <div class="auction-card" onclick="openAuctionModal(${auction.id})">
                     <div class="auction-media">
                         ${auction.mediaType === 'image' 
@@ -2058,41 +2115,17 @@
             // Sort by time remaining
             const sortedAuctions = [...filteredAuctions].sort((a, b) => a.endTime - b.endTime);
 
-            container.innerHTML = sortedAuctions.map(auction => `
-                <div class="auction-card" onclick="openAuctionModal(${auction.id})">
-                    <div class="auction-media">
-                        ${auction.mediaType === 'image' 
-                            ? `<img src="${auction.mediaUrl}" alt="${auction.description}">`
-                            : `<video src="${auction.mediaUrl}" muted loop autoplay playsinline></video>`
-                        }
-                        <div class="watermark">REELAUCTION</div>
-                        ${auction.isPremiumContent && auction.startingBid > 1 
-                            ? `<div style="position: absolute; top: 1rem; right: 1rem; background: linear-gradient(135deg, var(--accent-gold), #ffed4e); color: #000; padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700;">⭐ PREMIUM</div>`
-                            : ''
-                        }
-                        ${auction.certificateMetadata 
-                            ? `<div style="position: absolute; top: 1rem; left: 1rem; background: rgba(0, 0, 0, 0.8); color: var(--accent-gold); padding: 0.25rem 0.75rem; border-radius: 100px; font-size: 0.7rem; font-weight: 700; border: 1px solid var(--accent-gold);">🏆 CERTIFIED</div>`
-                            : ''
-                        }
-                    </div>
-                    <div class="auction-info">
-                        <div class="auction-description">${auction.description}</div>
-                        <div class="auction-meta">
-                            <div>
-                                <div class="current-bid">$${auction.currentBid}</div>
-                                <div class="bid-count">${auction.bidCount} bids${auction.startingBid > 1 ? ` • Started at $${auction.startingBid}` : ''}</div>
-                                <div style="color: var(--accent-fire); font-size: 0.875rem; font-weight: 700; margin-top: 0.25rem;">
-                                    <span style="font-size: 0.75rem; color: var(--text-secondary);">Time Remaining:</span> 
-                                    <span class="auction-timer" data-end="${auction.endTime}">--:--</span>
-                                </div>
-                            </div>
-                            <button class="btn btn-primary" style="padding: 0.5rem 1rem; font-size: 0.85rem;" onclick="event.stopPropagation(); placeBid(${auction.id})">
-                                Bid
-                            </button>
-                        </div>
+            container.innerHTML = `
+                <div>
+                    <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.5rem; margin-bottom: 1rem; color: var(--text-primary);">
+                        Search Results
+                        <span style="font-size: 0.75rem; background: var(--bg-dark); color: var(--text-secondary); padding: 0.25rem 0.75rem; border-radius: 100px; font-weight: 700; margin-left: 0.5rem;">${sortedAuctions.length}</span>
+                    </h3>
+                    <div class="auction-grid">
+                        ${renderAuctions(sortedAuctions)}
                     </div>
                 </div>
-            `).join('');
+            `;
         }
 
         function startAuctionTimers() {
@@ -2322,6 +2355,15 @@
 
         function switchCamera() {
             currentCamera = currentCamera === 'user' ? 'environment' : 'user';
+            initCamera();
+        }
+        
+        function toggleMediaType() {
+            mediaType = mediaType === 'photo' ? 'video' : 'photo';
+            const btn = document.getElementById('mediaTypeBtn');
+            btn.innerHTML = mediaType === 'photo' ? '📷' : '🎥';
+            btn.style.background = mediaType === 'video' ? 'var(--accent-fire)' : 'var(--bg-dark)';
+            btn.style.color = mediaType === 'video' ? 'white' : 'var(--text-primary)';
             initCamera();
         }
         
@@ -2752,7 +2794,7 @@
                 currentBid: startingBid,
                 startingBid: startingBid, // Track original starting bid
                 bidCount: 0,
-                endTime: Date.now() + 3600000, // 1 hour from now
+                endTime: Date.now() + 86400000, // 24 hours from now
                 timestamp: Date.now(),
                 isPremiumContent: currentUser.isPremium,
                 // CERTIFICATE OF AUTHENTICITY DATA
@@ -2838,7 +2880,7 @@ AUCTION DETAILS
 ───────────────────────────────────────────────────────────
 
 Listed: ${new Date(auction.timestamp).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
-Auction Duration: 1 hour
+Auction Duration: 24 hours
 Starting Bid: $${auction.startingBid.toFixed(2)}
 
 ───────────────────────────────────────────────────────────
