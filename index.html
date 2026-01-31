@@ -2541,22 +2541,7 @@
                 
                 debugLog('📝 Showing content form...');
                 
-                // STEP 1: Completely hide the entire camera section
-                const cameraSection = document.getElementById('cameraSection');
-                const cameraPreview = document.getElementById('cameraPreviewSection');
-                const captureButton = document.querySelector('button[onclick="openProCapture()"]');
-                
-                if (cameraPreview) {
-                    cameraPreview.style.display = 'none';
-                    debugLog('✅ Hidden camera preview');
-                }
-                
-                if (captureButton) {
-                    captureButton.style.display = 'none';
-                    debugLog('✅ Hidden capture button');
-                }
-                
-                // STEP 2: Show the form prominently
+                // STEP 1: Get the form element
                 const contentForm = document.getElementById('contentForm');
                 
                 if (!contentForm) {
@@ -2567,28 +2552,59 @@
                 
                 debugLog('✅ contentForm element exists');
                 
-                // Force display with all possible overrides
+                // STEP 2: Move form OUT of camera section and into camera section parent
+                const cameraSection = document.getElementById('cameraSection');
+                const cameraContainer = cameraSection.querySelector('.camera-container');
+                
+                // Remove form from wherever it is
+                contentForm.remove();
+                
+                // Append it directly to cameraSection (not inside camera-container)
+                cameraSection.appendChild(contentForm);
+                
+                debugLog('✅ Moved form outside camera-container');
+                
+                // STEP 3: Hide camera elements
+                const cameraPreview = document.getElementById('cameraPreviewSection');
+                const captureButton = cameraContainer.querySelector('button[onclick="openProCapture()"]');
+                const captureButtonParent = captureButton ? captureButton.parentElement : null;
+                
+                if (cameraPreview) {
+                    cameraPreview.style.display = 'none';
+                    debugLog('✅ Hidden camera preview');
+                }
+                
+                if (captureButtonParent) {
+                    captureButtonParent.style.display = 'none';
+                    debugLog('✅ Hidden capture button section');
+                }
+                
+                // STEP 4: Force display the form with extreme styling
                 contentForm.style.display = 'block';
                 contentForm.style.visibility = 'visible';
                 contentForm.style.opacity = '1';
                 contentForm.style.position = 'relative';
                 contentForm.style.zIndex = '10000';
-                contentForm.style.marginTop = '2rem';
-                contentForm.style.background = 'var(--bg-dark)';
-                contentForm.style.padding = '2rem 1rem';
+                contentForm.style.margin = '2rem auto';
+                contentForm.style.maxWidth = '600px';
+                contentForm.style.background = 'var(--bg-card)';
+                contentForm.style.padding = '2rem';
+                contentForm.style.borderRadius = '16px';
+                contentForm.style.border = '4px solid var(--accent-fire)';
                 contentForm.style.minHeight = '400px';
                 
                 debugLog('✅ Form styles applied');
                 
-                // STEP 3: Show a preview thumbnail instead of full preview
+                // STEP 5: Add preview thumbnail at top of form
                 const previewContainer = document.createElement('div');
-                previewContainer.style.cssText = 'width: 100%; max-width: 200px; margin: 0 auto 1rem; border-radius: 12px; overflow: hidden; border: 2px solid var(--accent-gold);';
+                previewContainer.style.cssText = 'width: 100%; max-width: 200px; margin: 0 auto 1.5rem; border-radius: 12px; overflow: hidden; border: 3px solid var(--accent-gold);';
                 
                 if (mediaType === 'video') {
                     const videoThumb = document.createElement('video');
                     videoThumb.src = mediaUrl;
                     videoThumb.style.width = '100%';
                     videoThumb.style.display = 'block';
+                    videoThumb.controls = true;
                     previewContainer.appendChild(videoThumb);
                 } else {
                     const imgThumb = document.createElement('img');
@@ -2598,7 +2614,7 @@
                     previewContainer.appendChild(imgThumb);
                 }
                 
-                // Insert preview at top of form
+                // Insert preview at very top of form
                 const firstChild = contentForm.firstChild;
                 contentForm.insertBefore(previewContainer, firstChild);
                 
@@ -2606,28 +2622,35 @@
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
-                    document.getElementById('startingBidGroup').style.display = 'block';
-                    debugLog('⭐ Premium features enabled');
+                    const startingBidGroup = document.getElementById('startingBidGroup');
+                    if (startingBidGroup) {
+                        startingBidGroup.style.display = 'block';
+                        debugLog('⭐ Premium features enabled');
+                    }
                 }
                 
                 showStatus(`✓ ${mediaType === 'video' ? 'Video' : 'Photo'} captured! Add description below.`, 'success');
                 
-                // STEP 4: Scroll to top of page to see the form
+                // STEP 6: Scroll to form
                 setTimeout(() => {
-                    debugLog('📜 Scrolling to top...');
+                    debugLog('📜 Scrolling to form...');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     
                     setTimeout(() => {
+                        contentForm.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                        
                         const textarea = document.getElementById('contentDescription');
                         if (textarea) {
                             textarea.focus();
-                            textarea.click();
                             debugLog('✅ Focused textarea');
                         }
-                    }, 500);
+                    }, 300);
                     
-                    debugLog('✅ ALL DONE! Form should be visible at top of page');
-                }, 300);
+                    debugLog('✅ ALL DONE! Form moved outside container and visible');
+                }, 400);
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
