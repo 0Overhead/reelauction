@@ -1635,20 +1635,23 @@
 
                 <!-- Content Description Form -->
                 <div id="contentForm" style="display: none;">
-                    <!-- Success Header -->
-                    <div style="background: linear-gradient(135deg, rgba(0, 255, 136, 0.1), rgba(255, 215, 0, 0.1)); border: 2px solid var(--success); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; text-align: center;">
-                        <div style="font-size: 3rem; margin-bottom: 0.5rem;">✓</div>
-                        <h3 style="font-family: 'Archivo Black', sans-serif; font-size: 1.3rem; margin-bottom: 0.5rem;">
-                            Content Captured!
-                        </h3>
+                    <!-- Success Header - IMPOSSIBLE TO MISS -->
+                    <div style="background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(255, 215, 0, 0.2)); border: 4px solid var(--success); border-radius: 16px; padding: 2rem; margin-bottom: 2rem; text-align: center; animation: pulse 2s infinite;">
+                        <div style="font-size: 5rem; margin-bottom: 1rem;">✓</div>
+                        <h2 style="font-family: 'Archivo Black', sans-serif; font-size: 2rem; margin-bottom: 1rem; color: var(--success);">
+                            CONTENT CAPTURED!
+                        </h2>
+                        <p style="color: var(--text-primary); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">
+                            👇 ADD DESCRIPTION BELOW 👇
+                        </p>
                         <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                            Now add a description and list your content on auction
+                            Your photo/video is ready to list on auction
                         </p>
                     </div>
                     
                     <div class="form-group">
-                        <label>Description (Max 160 characters)</label>
-                        <textarea id="contentDescription" maxlength="160" placeholder="Describe what makes this moment valuable..."></textarea>
+                        <label style="font-size: 1.2rem; font-weight: 700; color: var(--accent-fire);">Description (Max 160 characters)</label>
+                        <textarea id="contentDescription" maxlength="160" placeholder="Describe what makes this moment valuable..." style="min-height: 100px; font-size: 1.1rem;"></textarea>
                         <div class="char-counter">
                             <span id="charCount">0</span>/160
                         </div>
@@ -2541,8 +2544,18 @@
                 // Show content form prominently
                 const contentForm = document.getElementById('contentForm');
                 contentForm.style.display = 'block';
+                contentForm.style.position = 'relative';
+                contentForm.style.zIndex = '1000';
+                contentForm.style.marginTop = '2rem';
+                contentForm.style.background = 'var(--bg-card)';
+                contentForm.style.padding = '1.5rem';
+                contentForm.style.borderRadius = '12px';
+                contentForm.style.border = '3px solid var(--accent-fire)';
                 
                 debugLog('✅ Form display set to block');
+                
+                // Hide the camera preview section to avoid confusion
+                document.getElementById('cameraPreviewSection').style.display = 'none';
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
@@ -2552,15 +2565,16 @@
                 
                 showStatus(`✓ ${mediaType === 'video' ? 'Video' : 'Photo'} captured! Add description to list.`, 'success');
                 
-                // Scroll to the form so user sees it
+                // Scroll to the form so user sees it - scroll to top of page
                 setTimeout(() => {
                     debugLog('📜 Scrolling to form...');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     contentForm.scrollIntoView({ 
                         behavior: 'smooth', 
-                        block: 'start' 
+                        block: 'center' 
                     });
                     debugLog('✅ ALL DONE! Form should be visible now');
-                }, 500);
+                }, 300);
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
