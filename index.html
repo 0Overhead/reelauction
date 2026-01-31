@@ -99,9 +99,9 @@
             const mobile = isMobileDevice();
             
             if (mobile) {
-                deviceInfo.innerHTML = '<div style="color: #00ff88;">📱 Mobile device detected - Ready to capture!</div>';
+                deviceInfo.innerHTML = '<div style="color: #00ff88;">📱 Mobile device detected - Ready to capture authentic content!</div>';
             } else {
-                deviceInfo.innerHTML = '<div style="color: #ff8800;">💻 Desktop detected - You\'ll be prompted to select files</div>';
+                deviceInfo.innerHTML = '<div style="color: #ff3d00; font-weight: bold;">💻 Desktop Detected - Content creation disabled</div><div style="color: #888; font-size: 11px; margin-top: 5px;">Open ReelAuction on your phone or tablet to capture live content with verified timestamps & GPS.</div>';
             }
         });
     </script>
@@ -183,26 +183,20 @@
             
             // Check if mobile device
             if (!isMobileDevice()) {
-                log('⚠️ Desktop device detected');
-                const useAnyway = confirm(
+                log('⚠️ Desktop device detected - BLOCKED');
+                alert(
                     '📱 Mobile Device Required\n\n' +
-                    'This feature is designed for mobile devices with cameras.\n\n' +
-                    'On desktop/laptop, you can:\n' +
-                    '• Select existing photos/videos from your files\n' +
-                    '• Use a webcam (if available)\n\n' +
-                    'For the best experience, please use your phone or tablet.\n\n' +
-                    'Continue anyway?'
+                    'ReelAuction requires live photo/video capture to ensure authenticity.\n\n' +
+                    'This feature only works on:\n' +
+                    '• iPhone / iPad\n' +
+                    '• Android phones / tablets\n\n' +
+                    'Please open ReelAuction on your mobile device to capture and list content.\n\n' +
+                    'Why? To guarantee every item is authentic with server-verified timestamps and GPS data.'
                 );
-                
-                if (!useAnyway) {
-                    log('❌ User cancelled (desktop detected)');
-                    return;
-                }
-                
-                log('✅ User chose to continue on desktop');
-            } else {
-                log('✅ Mobile device detected');
+                return; // Block completely
             }
+            
+            log('✅ Mobile device detected');
             
             // Create file input
             const input = document.createElement('input');
