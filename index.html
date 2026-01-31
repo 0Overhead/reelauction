@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloudinary Test</title>
-    <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript"></script>
+    <title>Native Camera + Cloudinary Test</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,18 +22,23 @@
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
+            margin-bottom: 10px;
         }
-        .result {
-            margin-top: 20px;
-            padding: 20px;
+        .status {
+            padding: 10px;
             background: #1a1a1a;
-            border-radius: 8px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+        .preview {
+            margin: 20px 0;
             display: none;
         }
-        .result img {
+        .preview img, .preview video {
             max-width: 100%;
             border-radius: 8px;
-            margin-top: 10px;
+            border: 2px solid #ffd700;
         }
         .form-section {
             display: none;
@@ -52,110 +56,165 @@
             background: #0a0a0a;
             color: white;
             min-height: 100px;
+            box-sizing: border-box;
         }
         .submit-btn {
             background: #ffd700;
             color: #000;
             margin-top: 10px;
         }
+        .debug {
+            margin-top: 20px;
+            padding: 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <h1>Cloudinary Widget Test</h1>
-    <p>Click the button to open camera and upload</p>
+    <h1>Native Camera Test</h1>
+    <p>Click button → Camera opens instantly!</p>
     
-    <button class="btn" onclick="openCloudinary()">📸 Capture Photo/Video</button>
+    <button class="btn" onclick="openCamera()">📸 Take Photo/Video</button>
     
-    <div class="result" id="result"></div>
+    <div class="status" id="status">Ready to capture...</div>
+    
+    <div class="preview" id="preview"></div>
     
     <div class="form-section" id="formSection">
-        <h3>✓ Upload Successful!</h3>
+        <h3>✓ Upload Complete!</h3>
         <label>Add Description:</label>
         <textarea id="description" placeholder="Describe your content..."></textarea>
         <button class="btn submit-btn" onclick="submitListing()">List on Auction</button>
     </div>
     
+    <div class="debug" id="debug"></div>
+    
     <script>
         let uploadedData = null;
         
-        function openCloudinary() {
-            const widget = cloudinary.createUploadWidget({
-                cloudName: 'dtfymlzzr',
-                uploadPreset: 'pro_capture',
-                sources: ['camera'],
-                multiple: false,
-                resourceType: 'auto',
-                clientAllowedFormats: ['jpg', 'jpeg', 'png', 'mp4', 'webm', 'mov'],
-                maxFileSize: 100000000,
-                cropping: false,
-                showSkipCropButton: true,
-                styles: {
-                    palette: {
-                        window: "#1a1a1a",
-                        windowBorder: "#ff3d00",
-                        tabIcon: "#ffd700",
-                        menuIcons: "#ffffff",
-                        textDark: "#ffffff",
-                        textLight: "#cccccc",
-                        link: "#ff3d00",
-                        action: "#ff3d00",
-                        inactiveTabIcon: "#666666",
-                        error: "#ff0000",
-                        inProgress: "#ffd700",
-                        complete: "#00ff88",
-                        sourceBg: "#2a2a2a"
-                    }
-                },
-                text: {
-                    en: {
-                        or: "",
-                        menu: {
-                            files: "Take Photo or Video"
-                        },
-                        local: {
-                            browse: "Camera",
-                            dd_title_single: "Take Photo or Video"
-                        }
-                    }
-                }
-            }, (error, result) => {
-                if (error) {
-                    console.error('Upload error:', error);
-                    alert('Upload failed: ' + error.message);
+        function log(message) {
+            const debugDiv = document.getElementById('debug');
+            const timestamp = new Date().toLocaleTimeString();
+            debugDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugDiv.scrollTop = debugDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function setStatus(message) {
+            document.getElementById('status').textContent = message;
+            log(message);
+        }
+        
+        function openCamera() {
+            log('📸 openCamera called');
+            
+            // Create file input
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*,video/*';
+            input.capture = 'environment'; // Use back camera
+            
+            log('📸 File input created');
+            
+            input.onchange = async (e) => {
+                log('📸 File selected!');
+                const file = e.target.files[0];
+                
+                if (!file) {
+                    log('❌ No file');
                     return;
                 }
                 
-                if (result && result.event === 'success') {
-                    console.log('Upload success:', result.info);
-                    handleUploadSuccess(result.info);
-                }
-            });
+                log(`✅ File: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
+                setStatus('📤 Uploading to Cloudinary...');
+                
+                // Upload to Cloudinary
+                await uploadToCloudinary(file);
+            };
             
-            widget.open();
+            log('📸 Opening camera...');
+            setStatus('📸 Opening camera...');
+            input.click();
         }
         
-        function handleUploadSuccess(info) {
-            uploadedData = info;
-            
-            // Show result
-            const resultDiv = document.getElementById('result');
-            resultDiv.style.display = 'block';
-            resultDiv.innerHTML = `
-                <h3>✓ Upload Successful!</h3>
-                <p><strong>URL:</strong> ${info.secure_url}</p>
-                <p><strong>Type:</strong> ${info.resource_type}</p>
-                <p><strong>Size:</strong> ${Math.round(info.bytes / 1024)} KB</p>
-                ${info.resource_type === 'image' 
-                    ? `<img src="${info.secure_url}" alt="Uploaded">`
-                    : `<video src="${info.secure_url}" controls style="max-width: 100%;"></video>`
+        async function uploadToCloudinary(file) {
+            try {
+                log('📤 Starting upload...');
+                
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', 'pro_capture');
+                
+                // Determine resource type
+                const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+                log(`📤 Resource type: ${resourceType}`);
+                
+                const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
+                log(`📤 Uploading to: ${uploadUrl}`);
+                
+                const response = await fetch(uploadUrl, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                log(`📤 Response status: ${response.status}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`❌ Upload failed: ${errorText}`);
+                    setStatus('❌ Upload failed!');
+                    alert('Upload failed: ' + errorText);
+                    return;
                 }
-            `;
+                
+                const data = await response.json();
+                log(`✅ Upload success! URL: ${data.secure_url}`);
+                
+                handleUploadSuccess(data, resourceType);
+                
+            } catch (error) {
+                log(`❌ Error: ${error.message}`);
+                setStatus('❌ Upload error!');
+                alert('Upload error: ' + error.message);
+            }
+        }
+        
+        function handleUploadSuccess(data, resourceType) {
+            log('🎉 Processing upload...');
+            uploadedData = data;
+            
+            setStatus('✓ Upload complete!');
+            
+            // Show preview
+            const previewDiv = document.getElementById('preview');
+            previewDiv.style.display = 'block';
+            
+            if (resourceType === 'video') {
+                previewDiv.innerHTML = `<video src="${data.secure_url}" controls></video>`;
+            } else {
+                previewDiv.innerHTML = `<img src="${data.secure_url}" alt="Uploaded">`;
+            }
+            
+            log('✅ Preview shown');
             
             // Show form
             document.getElementById('formSection').style.display = 'block';
+            log('✅ Form shown');
             
             // Scroll to form
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
+            
+            // Focus textarea
+            setTimeout(() => {
+                document.getElementById('description').focus();
+            }, 500);
+            
+            log('✅ ALL DONE!');
         }
         
         function submitListing() {
@@ -166,17 +225,24 @@
                 return;
             }
             
+            log(`✅ Creating listing with description: "${description}"`);
+            
             alert(`SUCCESS! Would create auction with:
-- Media: ${uploadedData.secure_url}
-- Type: ${uploadedData.resource_type}
-- Description: ${description}
+• Media: ${uploadedData.secure_url}
+• Type: ${uploadedData.resource_type}
+• Description: ${description}
+• Hash: ${uploadedData.etag}
+• Created: ${uploadedData.created_at}
 
-In the real app, this would create the auction and show it in the feed!`);
+In the real app, this would create the auction!`);
+            
+            log('🎯 Listing created!');
             
             // Reset for next capture
             document.getElementById('description').value = '';
-            document.getElementById('result').style.display = 'none';
+            document.getElementById('preview').style.display = 'none';
             document.getElementById('formSection').style.display = 'none';
+            setStatus('Ready to capture...');
         }
     </script>
 </body>
