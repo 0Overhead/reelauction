@@ -3671,15 +3671,6 @@
             
             resetCamera();
         }
-            
-            if (currentUser.isPremium && startingBid > 1) {
-                showStatus(`Content listed with Certificate! Starting bid: $${startingBid}`, 'success');
-            } else {
-                showStatus('Content listed with Certificate! Auction starts now at $1.', 'success');
-            }
-            
-            resetCamera();
-        }
         
         function generateCertificateText(auction, metadata) {
             const certificateId = `CERT-${new Date().getFullYear()}-${
