@@ -3548,36 +3548,48 @@
         }
 
         function resetCamera() {
-            debugLog('🔄 resetCamera called');
-            
             // Hide and reset form
             const contentForm = document.getElementById('contentForm');
             if (contentForm) {
                 contentForm.style.display = 'none';
-                debugLog('✅ Hidden content form');
             }
             
-            document.getElementById('contentDescription').value = '';
-            document.getElementById('charCount').textContent = '0';
-            document.getElementById('startingBidInput').value = '1';
-            document.getElementById('videoSuccessOverlay').style.display = 'none';
+            // Reset form fields
+            const descField = document.getElementById('contentDescription');
+            const charCount = document.getElementById('charCount');
+            const bidInput = document.getElementById('startingBidInput');
             
+            if (descField) descField.value = '';
+            if (charCount) charCount.textContent = '0';
+            if (bidInput) bidInput.value = '1';
+            
+            // Hide camera preview
             const cameraPreview = document.getElementById('cameraPreviewSection');
             if (cameraPreview) {
                 cameraPreview.style.display = 'none';
+            }
+            
+            const videoOverlay = document.getElementById('videoSuccessOverlay');
+            if (videoOverlay) {
+                videoOverlay.style.display = 'none';
+            }
+            
+            // IMPORTANT: Show the capture button again
+            const cameraSection = document.getElementById('cameraSection');
+            if (cameraSection) {
+                const cameraContainer = cameraSection.querySelector('.camera-container');
+                if (cameraContainer) {
+                    const captureButton = cameraContainer.querySelector('button[onclick="openProCapture()"]');
+                    if (captureButton && captureButton.parentElement) {
+                        captureButton.parentElement.style.display = 'block';
+                    }
+                }
             }
             
             // Reset captured data
             capturedBlob = null;
             captureMetadata = null;
             isProCapture = false;
-            
-            debugLog('✅ Reset all capture data');
-            
-            // Show the capture button again by reloading the page or showing the section
-            showSection('cameraSection');
-            
-            debugLog('✅ Returned to camera section');
         }
 
         function submitContent() {
