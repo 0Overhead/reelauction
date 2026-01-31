@@ -79,6 +79,13 @@
     <h1>Native Camera Test</h1>
     <p>Click button → Camera opens instantly!</p>
     
+    <div style="margin-bottom: 15px; padding: 10px; background: #1a1a1a; border-radius: 4px;">
+        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="premiumToggle" onchange="togglePremium()" style="width: 20px; height: 20px;">
+            <span>⭐ Test as Premium User (custom starting bid)</span>
+        </label>
+    </div>
+    
     <button class="btn" onclick="openCamera()">📸 Take Photo/Video</button>
     
     <div class="status" id="status">Ready to capture...</div>
@@ -88,7 +95,26 @@
     <div class="form-section" id="formSection">
         <h3>✓ Upload Complete!</h3>
         <label>Add Description:</label>
-        <textarea id="description" placeholder="Describe your content..."></textarea>
+        <textarea id="description" placeholder="Describe your content..." maxlength="160"></textarea>
+        <div style="text-align: right; font-size: 12px; color: #888; margin-top: 5px;">
+            <span id="charCount">0</span>/160
+        </div>
+        
+        <!-- Premium Starting Bid (only shows for premium users) -->
+        <div id="premiumBidSection" style="display: none; margin-top: 15px; padding: 15px; background: rgba(255, 215, 0, 0.1); border: 1px solid #ffd700; border-radius: 4px;">
+            <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                <span style="background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">⭐ PREMIUM</span>
+                Starting Bid
+            </label>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 24px; font-weight: bold;">$</span>
+                <input type="number" id="startingBid" min="1" value="1" style="width: 100px; padding: 8px; font-size: 18px; font-weight: bold; background: #0a0a0a; color: white; border: 1px solid #ffd700; border-radius: 4px; text-align: center;">
+            </div>
+            <div style="font-size: 12px; color: #888; margin-top: 8px;">
+                Set your minimum starting bid (must be $1 or more)
+            </div>
+        </div>
+        
         <button class="btn submit-btn" onclick="submitListing()">List on Auction</button>
     </div>
     
@@ -96,6 +122,15 @@
     
     <script>
         let uploadedData = null;
+        let currentUser = {
+            name: 'TestUser',
+            isPremium: false // Change to true to test premium features
+        };
+        
+        function togglePremium() {
+            currentUser.isPremium = document.getElementById('premiumToggle').checked;
+            log(`${currentUser.isPremium ? '⭐ Premium mode enabled' : '👤 Regular mode'}`);
+        }
         
         function log(message) {
             const debugDiv = document.getElementById('debug');
@@ -131,7 +166,20 @@
                 }
                 
                 log(`✅ File: ${file.name} (${file.type}, ${Math.round(file.size/1024)}KB)`);
-                setStatus('📤 Uploading to Cloudinary...');
+                
+                // Check if it's a video - we'll trim it server-side if needed
+                if (file.type.startsWith('video/')) {
+                    log('🎥 Video detected');
+                    const duration = await getVideoDuration(file);
+                    if (duration > 60) {
+                        log(`⚠️ Video is ${Math.round(duration)}s, will be trimmed to 60s`);
+                        setStatus('📤 Uploading video (will trim to 60 seconds)...');
+                    } else {
+                        setStatus('📤 Uploading video...');
+                    }
+                } else {
+                    setStatus('📤 Uploading photo...');
+                }
                 
                 // Upload to Cloudinary
                 await uploadToCloudinary(file);
@@ -140,6 +188,24 @@
             log('📸 Opening camera...');
             setStatus('📸 Opening camera...');
             input.click();
+        }
+        
+        async function getVideoDuration(file) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                
+                video.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    resolve(video.duration);
+                };
+                
+                video.onerror = function() {
+                    resolve(0); // Can't determine, allow upload
+                };
+                
+                video.src = URL.createObjectURL(file);
+            });
         }
         
         async function uploadToCloudinary(file) {
@@ -153,6 +219,12 @@
                 // Determine resource type
                 const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
                 log(`📤 Resource type: ${resourceType}`);
+                
+                // For videos, add transformation to trim to 60 seconds
+                if (resourceType === 'video') {
+                    formData.append('eager', 'du_60'); // Trim to 60 seconds duration
+                    log('✂️ Video will be trimmed to 60 seconds');
+                }
                 
                 const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
                 log(`📤 Uploading to: ${uploadUrl}`);
@@ -173,6 +245,16 @@
                 }
                 
                 const data = await response.json();
+                
+                // Check if video was trimmed
+                if (resourceType === 'video' && data.duration > 60) {
+                    log(`✂️ Video trimmed from ${Math.round(data.duration)}s to 60s`);
+                    data.wasTrimmed = true;
+                    data.originalDuration = data.duration;
+                } else if (resourceType === 'video') {
+                    log(`✅ Video duration: ${Math.round(data.duration)}s (no trim needed)`);
+                }
+                
                 log(`✅ Upload success! URL: ${data.secure_url}`);
                 
                 handleUploadSuccess(data, resourceType);
@@ -188,7 +270,14 @@
             log('🎉 Processing upload...');
             uploadedData = data;
             
-            setStatus('✓ Upload complete!');
+            // Show appropriate success message
+            if (resourceType === 'video' && data.wasTrimmed) {
+                setStatus(`✓ Video captured and trimmed to 60 seconds!`);
+            } else if (resourceType === 'video') {
+                setStatus(`✓ Video captured (${Math.round(data.duration)} seconds)!`);
+            } else {
+                setStatus('✓ Photo captured!');
+            }
             
             // Show preview
             const previewDiv = document.getElementById('preview');
@@ -196,6 +285,9 @@
             
             if (resourceType === 'video') {
                 previewDiv.innerHTML = `<video src="${data.secure_url}" controls></video>`;
+                if (data.wasTrimmed) {
+                    previewDiv.innerHTML += `<div style="text-align: center; color: #ffd700; font-size: 12px; margin-top: 5px;">✂️ Trimmed to 60 seconds</div>`;
+                }
             } else {
                 previewDiv.innerHTML = `<img src="${data.secure_url}" alt="Uploaded">`;
             }
@@ -206,12 +298,25 @@
             document.getElementById('formSection').style.display = 'block';
             log('✅ Form shown');
             
+            // Show premium features if user is premium
+            if (currentUser.isPremium) {
+                document.getElementById('premiumBidSection').style.display = 'block';
+                log('⭐ Premium features enabled');
+            }
+            
+            // Setup character counter
+            const textarea = document.getElementById('description');
+            const charCount = document.getElementById('charCount');
+            textarea.addEventListener('input', () => {
+                charCount.textContent = textarea.value.length;
+            });
+            
             // Scroll to form
             document.getElementById('formSection').scrollIntoView({ behavior: 'smooth' });
             
             // Focus textarea
             setTimeout(() => {
-                document.getElementById('description').focus();
+                textarea.focus();
             }, 500);
             
             log('✅ ALL DONE!');
@@ -225,12 +330,25 @@
                 return;
             }
             
-            log(`✅ Creating listing with description: "${description}"`);
+            // Get starting bid
+            let startingBid = 1;
+            if (currentUser.isPremium) {
+                const customBid = parseInt(document.getElementById('startingBid').value);
+                if (customBid && customBid >= 1) {
+                    startingBid = customBid;
+                } else {
+                    alert('Starting bid must be $1 or more');
+                    return;
+                }
+            }
+            
+            log(`✅ Creating listing with description: "${description}", starting bid: $${startingBid}`);
             
             alert(`SUCCESS! Would create auction with:
 • Media: ${uploadedData.secure_url}
 • Type: ${uploadedData.resource_type}
 • Description: ${description}
+• Starting Bid: $${startingBid}
 • Hash: ${uploadedData.etag}
 • Created: ${uploadedData.created_at}
 
@@ -240,6 +358,8 @@ In the real app, this would create the auction!`);
             
             // Reset for next capture
             document.getElementById('description').value = '';
+            document.getElementById('charCount').textContent = '0';
+            document.getElementById('startingBid').value = '1';
             document.getElementById('preview').style.display = 'none';
             document.getElementById('formSection').style.display = 'none';
             setStatus('Ready to capture...');
