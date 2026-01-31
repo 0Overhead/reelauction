@@ -2541,21 +2541,60 @@
                 
                 debugLog('📝 Showing content form...');
                 
-                // Show content form prominently
+                // NUCLEAR OPTION - Force show form with multiple approaches
                 const contentForm = document.getElementById('contentForm');
+                
+                if (!contentForm) {
+                    debugLog('❌ CRITICAL: contentForm element not found!');
+                    alert('ERROR: Form element missing! Please refresh page.');
+                    return;
+                }
+                
+                debugLog('✅ contentForm element exists');
+                
+                // Method 1: Direct style manipulation
                 contentForm.style.display = 'block';
+                contentForm.style.visibility = 'visible';
+                contentForm.style.opacity = '1';
                 contentForm.style.position = 'relative';
-                contentForm.style.zIndex = '1000';
+                contentForm.style.zIndex = '9999';
                 contentForm.style.marginTop = '2rem';
                 contentForm.style.background = 'var(--bg-card)';
                 contentForm.style.padding = '1.5rem';
                 contentForm.style.borderRadius = '12px';
                 contentForm.style.border = '3px solid var(--accent-fire)';
                 
-                debugLog('✅ Form display set to block');
+                debugLog('✅ Form styles applied');
                 
-                // Hide the camera preview section to avoid confusion
-                document.getElementById('cameraPreviewSection').style.display = 'none';
+                // Method 2: Remove any display:none from parent elements
+                let parent = contentForm.parentElement;
+                let depth = 0;
+                while (parent && depth < 10) {
+                    if (parent.style.display === 'none') {
+                        debugLog(`⚠️ Parent ${depth} was hidden, showing it`);
+                        parent.style.display = 'block';
+                    }
+                    parent = parent.parentElement;
+                    depth++;
+                }
+                
+                // Method 3: Force focus on the textarea
+                setTimeout(() => {
+                    const textarea = document.getElementById('contentDescription');
+                    if (textarea) {
+                        textarea.focus();
+                        debugLog('✅ Focused on textarea');
+                    }
+                }, 500);
+                
+                debugLog('✅ Form display set to block with visibility visible');
+                
+                // Hide the "Capture Photo/Video" button so user doesn't click it again
+                const captureSection = document.querySelector('.btn.btn-primary');
+                if (captureSection && captureSection.textContent.includes('Capture Photo/Video')) {
+                    captureSection.style.display = 'none';
+                    debugLog('✅ Hid capture button');
+                }
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
@@ -2563,17 +2602,50 @@
                     debugLog('⭐ Premium features enabled');
                 }
                 
-                showStatus(`✓ ${mediaType === 'video' ? 'Video' : 'Photo'} captured! Add description to list.`, 'success');
+                showStatus(`✓ ${mediaType === 'video' ? 'Video' : 'Photo'} captured! Scroll down to add description.`, 'success');
                 
-                // Scroll to the form so user sees it - scroll to top of page
+                // Scroll to the form aggressively
                 setTimeout(() => {
-                    debugLog('📜 Scrolling to form...');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    contentForm.scrollIntoView({ 
-                        behavior: 'smooth', 
-                        block: 'center' 
-                    });
+                    debugLog('📜 Starting scroll sequence...');
+                    
+                    // First scroll to top
+                    window.scrollTo({ top: 0, behavior: 'auto' });
+                    
+                    // Then scroll to form
+                    setTimeout(() => {
+                        const formRect = contentForm.getBoundingClientRect();
+                        debugLog('📜 Form position', { 
+                            top: formRect.top, 
+                            visible: formRect.top < window.innerHeight 
+                        });
+                        
+                        contentForm.scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'center',
+                            inline: 'nearest'
+                        });
+                        
+                        debugLog('✅ Scrolled to form');
+                    }, 100);
+                    
                     debugLog('✅ ALL DONE! Form should be visible now');
+                    
+                    // Final check - is form actually visible?
+                    setTimeout(() => {
+                        const isVisible = contentForm.offsetHeight > 0;
+                        debugLog(`🔍 Final visibility check: ${isVisible}`);
+                        
+                        if (!isVisible) {
+                            debugLog('❌ FORM IS NOT VISIBLE - Trying emergency show');
+                            // Emergency: Try to show it at the very top
+                            contentForm.style.position = 'fixed';
+                            contentForm.style.top = '100px';
+                            contentForm.style.left = '50%';
+                            contentForm.style.transform = 'translateX(-50%)';
+                            contentForm.style.width = '90%';
+                            contentForm.style.maxWidth = '600px';
+                        }
+                    }, 1000);
                 }, 300);
                 
                 // Set premium starting bid option if user is premium
