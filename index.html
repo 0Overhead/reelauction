@@ -1881,7 +1881,7 @@
 
         let currentUser = null;
         
-        // Mobile device detection
+        // Mobile device detection for camera blocking
         function isMobileDevice() {
             const userAgent = navigator.userAgent || navigator.vendor || window.opera;
             const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
@@ -1891,6 +1891,7 @@
             return isMobile || (hasTouch && smallScreen);
         }
         
+        // Get video duration for trimming check
         async function getVideoDuration(file) {
             return new Promise((resolve) => {
                 const video = document.createElement('video');
@@ -2323,7 +2324,7 @@
                 return;
             }
             
-            // Check if mobile device - block desktop users
+            // Check if mobile device - block desktop
             if (!isMobileDevice()) {
                 alert(
                     '📱 Mobile Device Required\n\n' +
@@ -2351,7 +2352,7 @@
                     return;
                 }
                 
-                // Check video duration and set appropriate status
+                // Check video duration
                 if (file.type.startsWith('video/')) {
                     const duration = await getVideoDuration(file);
                     if (duration > 60) {
@@ -2386,27 +2387,20 @@
                 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    showStatus('Upload failed. Please try again.', 'error');
                     console.error('Upload failed:', errorText);
+                    showStatus('Upload failed. Please try again.', 'error');
                     return;
                 }
                 
                 const data = await response.json();
                 
-                // For videos, check duration and create trimmed URL if needed
-                if (resourceType === 'video') {
-                    const duration = data.duration || 0;
-                    
-                    if (duration > 60) {
-                        // Create trimmed URL by inserting transformation
-                        const originalUrl = data.secure_url;
-                        const trimmedUrl = originalUrl.replace('/upload/', '/upload/du_60/');
-                        data.secure_url = trimmedUrl;
-                        data.original_url = originalUrl;
-                        data.wasTrimmed = true;
-                        data.originalDuration = duration;
-                        data.duration = 60;
-                    }
+                // For videos > 60s, create trimmed URL
+                if (resourceType === 'video' && data.duration > 60) {
+                    const originalUrl = data.secure_url;
+                    data.secure_url = originalUrl.replace('/upload/', '/upload/du_60/');
+                    data.wasTrimmed = true;
+                    data.originalDuration = data.duration;
+                    data.duration = 60;
                 }
                 
                 await handleCloudinaryUpload(null, {
@@ -2432,10 +2426,10 @@
         }
         
         async function handleCloudinaryUpload(error, result) {
-            // debugLog('🔄 handleCloudinaryUpload called');
+            debugLog('🔄 handleCloudinaryUpload called');
             
             if (error) {
-                // debugLog('❌ Upload error received', { error });
+                debugLog('❌ Upload error received', { error });
                 console.error('Cloudinary upload error:', error);
                 showStatus('Upload failed. Please try again.', 'error');
                 return;
@@ -2443,7 +2437,7 @@
             
             if (result && result.event === 'success') {
                 const info = result.info;
-                // debugLog('✅ Upload success!', { url: info.secure_url });
+                debugLog('✅ Upload success!', { url: info.secure_url });
                 
                 const mediaType = info.resource_type; // 'image' or 'video'
                 const mediaUrl = info.secure_url;
@@ -2452,11 +2446,11 @@
                 const uploadedAt = new Date(info.created_at);
                 const secondsAgo = (Date.now() - uploadedAt) / 1000;
                 
-                // debugLog('⏱️ Timestamp check', { uploadedAt: info.created_at, secondsAgo });
+                debugLog('⏱️ Timestamp check', { uploadedAt: info.created_at, secondsAgo });
                 
                 // Make validation more lenient (5 minutes instead of 60 seconds)
                 if (secondsAgo > 300) {
-                    // debugLog('❌ Content too old');
+                    debugLog('❌ Content too old');
                     showStatus('Content must be uploaded within 5 minutes of capture', 'error');
                     return;
                 }
@@ -2465,10 +2459,10 @@
                 const imageHash = info.etag || info.public_id;
                 const isDuplicate = auctions.some(a => a.certificateMetadata && a.certificateMetadata.hash === imageHash);
                 
-                // debugLog('🔍 Duplicate check', { hash: imageHash, isDuplicate });
+                debugLog('🔍 Duplicate check', { hash: imageHash, isDuplicate });
                 
                 if (isDuplicate) {
-                    // debugLog('❌ Duplicate detected');
+                    debugLog('❌ Duplicate detected');
                     showStatus('This content has already been uploaded', 'error');
                     return;
                 }
@@ -2480,7 +2474,7 @@
                     lng: exifData.GPSLongitude || null
                 };
                 
-                // debugLog('📍 GPS data', gps);
+                debugLog('📍 GPS data', gps);
                 
                 // If no GPS in EXIF, try to get current location
                 if (!gps.lat || !gps.lng) {
@@ -2488,9 +2482,9 @@
                         const position = await getCurrentPosition();
                         gps.lat = position.coords.latitude;
                         gps.lng = position.coords.longitude;
-                        // debugLog('📍 GPS from geolocation', gps);
+                        debugLog('📍 GPS from geolocation', gps);
                     } catch (e) {
-                        // debugLog('⚠️ GPS not available', { error: e.message });
+                        debugLog('⚠️ GPS not available', { error: e.message });
                     }
                 }
                 
@@ -2512,19 +2506,19 @@
                     duration: info.duration || null
                 };
                 
-                // debugLog('📜 Certificate created');
+                debugLog('📜 Certificate created');
                 
                 // Set the media URL (Cloudinary CDN URL)
                 capturedBlob = mediaUrl;
                 
-                // debugLog('🖼️ Showing preview section...');
+                debugLog('🖼️ Showing preview section...');
                 
                 // Show the camera preview section with captured content
                 document.getElementById('cameraPreviewSection').style.display = 'block';
                 
                 // Show success based on media type
                 if (mediaType === 'video') {
-                    // debugLog('🎥 Displaying video');
+                    debugLog('🎥 Displaying video');
                     document.getElementById('videoSuccessOverlay').style.display = 'flex';
                     
                     const videoEl = document.getElementById('capturedMedia');
@@ -2537,7 +2531,7 @@
                         document.getElementById('videoSuccessOverlay').style.display = 'none';
                     }, 2000);
                 } else {
-                    // debugLog('🖼️ Displaying image');
+                    debugLog('🖼️ Displaying image');
                     const imgEl = document.getElementById('capturedMedia');
                     imgEl.src = mediaUrl;
                     imgEl.style.display = 'block';
@@ -2545,18 +2539,18 @@
                     document.getElementById('videoPreview').style.display = 'none';
                 }
                 
-                // debugLog('📝 Showing content form...');
+                debugLog('📝 Showing content form...');
                 
                 // STEP 1: Get the form element
                 const contentForm = document.getElementById('contentForm');
                 
                 if (!contentForm) {
-                    // debugLog('❌ CRITICAL: contentForm element not found!');
+                    debugLog('❌ CRITICAL: contentForm element not found!');
                     alert('ERROR: Form element missing! Please refresh page.');
                     return;
                 }
                 
-                // debugLog('✅ contentForm element exists');
+                debugLog('✅ contentForm element exists');
                 
                 // STEP 2: Move form OUT of camera section and into camera section parent
                 const cameraSection = document.getElementById('cameraSection');
@@ -2568,7 +2562,7 @@
                 // Append it directly to cameraSection (not inside camera-container)
                 cameraSection.appendChild(contentForm);
                 
-                // debugLog('✅ Moved form outside camera-container');
+                debugLog('✅ Moved form outside camera-container');
                 
                 // STEP 3: Hide camera elements
                 const cameraPreview = document.getElementById('cameraPreviewSection');
@@ -2577,12 +2571,12 @@
                 
                 if (cameraPreview) {
                     cameraPreview.style.display = 'none';
-                    // debugLog('✅ Hidden camera preview');
+                    debugLog('✅ Hidden camera preview');
                 }
                 
                 if (captureButtonParent) {
                     captureButtonParent.style.display = 'none';
-                    // debugLog('✅ Hidden capture button section');
+                    debugLog('✅ Hidden capture button section');
                 }
                 
                 // STEP 4: Force display the form with extreme styling
@@ -2599,7 +2593,7 @@
                 contentForm.style.border = '4px solid var(--accent-fire)';
                 contentForm.style.minHeight = '400px';
                 
-                // debugLog('✅ Form styles applied');
+                debugLog('✅ Form styles applied');
                 
                 // STEP 5: Add preview thumbnail at top of form
                 const previewContainer = document.createElement('div');
@@ -2624,14 +2618,14 @@
                 const firstChild = contentForm.firstChild;
                 contentForm.insertBefore(previewContainer, firstChild);
                 
-                // debugLog('✅ Added preview thumbnail to form');
+                debugLog('✅ Added preview thumbnail to form');
                 
                 // Set premium starting bid option if user is premium
                 if (currentUser.isPremium) {
                     const startingBidGroup = document.getElementById('startingBidGroup');
                     if (startingBidGroup) {
                         startingBidGroup.style.display = 'block';
-                        // debugLog('⭐ Premium features enabled');
+                        debugLog('⭐ Premium features enabled');
                     }
                 }
                 
@@ -2639,7 +2633,7 @@
                 
                 // STEP 6: Scroll to form
                 setTimeout(() => {
-                    // debugLog('📜 Scrolling to form...');
+                    debugLog('📜 Scrolling to form...');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     
                     setTimeout(() => {
@@ -2651,11 +2645,11 @@
                         const textarea = document.getElementById('contentDescription');
                         if (textarea) {
                             textarea.focus();
-                            // debugLog('✅ Focused textarea');
+                            debugLog('✅ Focused textarea');
                         }
                     }, 300);
                     
-                    // debugLog('✅ ALL DONE! Form moved outside container and visible');
+                    debugLog('✅ ALL DONE! Form moved outside container and visible');
                 }, 400);
                 
                 // Set premium starting bid option if user is premium
@@ -3554,13 +3548,13 @@
         }
 
         function resetCamera() {
-            // debugLog('🔄 resetCamera called');
+            debugLog('🔄 resetCamera called');
             
             // Hide and reset form
             const contentForm = document.getElementById('contentForm');
             if (contentForm) {
                 contentForm.style.display = 'none';
-                // debugLog('✅ Hidden content form');
+                debugLog('✅ Hidden content form');
             }
             
             document.getElementById('contentDescription').value = '';
@@ -3578,30 +3572,30 @@
             captureMetadata = null;
             isProCapture = false;
             
-            // debugLog('✅ Reset all capture data');
+            debugLog('✅ Reset all capture data');
             
             // Show the capture button again by reloading the page or showing the section
             showSection('cameraSection');
             
-            // debugLog('✅ Returned to camera section');
+            debugLog('✅ Returned to camera section');
         }
 
         function submitContent() {
-            // debugLog('📤 submitContent called');
+            debugLog('📤 submitContent called');
             
             if (!capturedBlob) {
-                // debugLog('❌ No capturedBlob');
+                debugLog('❌ No capturedBlob');
                 showStatus('Please capture content first', 'error');
                 return;
             }
             
-            // debugLog('✅ capturedBlob exists', { url: capturedBlob });
+            debugLog('✅ capturedBlob exists', { url: capturedBlob });
 
             const description = document.getElementById('contentDescription').value.trim();
-            // debugLog('📝 Description', { description, length: description.length });
+            debugLog('📝 Description', { description, length: description.length });
             
             if (!description) {
-                // debugLog('❌ No description provided');
+                debugLog('❌ No description provided');
                 showStatus('Please add a description', 'error');
                 return;
             }
@@ -3613,20 +3607,20 @@
                 if (customBid && customBid >= 1) {
                     startingBid = customBid;
                 } else {
-                    // debugLog('❌ Invalid starting bid');
+                    debugLog('❌ Invalid starting bid');
                     showStatus('Starting bid must be $1 or more', 'error');
                     return;
                 }
             }
             
-            // debugLog('💰 Starting bid', { startingBid, isPremium: currentUser.isPremium });
+            debugLog('💰 Starting bid', { startingBid, isPremium: currentUser.isPremium });
 
             // Pro Capture: capturedBlob is a Cloudinary URL
             const mediaUrl = capturedBlob;
             // Detect type from metadata or URL
             const mediaTypeValue = captureMetadata && captureMetadata.duration ? 'video' : 'image';
             
-            // debugLog('🎬 Media type', { mediaTypeValue });
+            debugLog('🎬 Media type', { mediaTypeValue });
 
             // Create auction
             const newAuction = {
@@ -3647,23 +3641,23 @@
                 certificateMetadata: captureMetadata
             };
 
-            // debugLog('🎯 Created auction object', { id: newAuction.id });
+            debugLog('🎯 Created auction object', { id: newAuction.id });
             
             auctions.unshift(newAuction);
             
-            // debugLog('✅ Added to auctions array', { totalAuctions: auctions.length });
+            debugLog('✅ Added to auctions array', { totalAuctions: auctions.length });
             
             // Generate and show certificate preview
             try {
                 const { certificateId, certificateText } = generateCertificateText(newAuction, captureMetadata);
-                // debugLog('📜 Certificate generated', { certificateId });
+                debugLog('📜 Certificate generated', { certificateId });
                 console.log('Certificate generated:', certificateId);
                 console.log(certificateText);
             } catch (error) {
-                // debugLog('⚠️ Certificate generation error', { error: error.message });
+                debugLog('⚠️ Certificate generation error', { error: error.message });
             }
             
-            // debugLog('🔄 Navigating to dashboard...');
+            debugLog('🔄 Navigating to dashboard...');
             showSection('dashboardSection');
             loadAuctions();
             
@@ -3673,7 +3667,7 @@
                 showStatus('Content listed with Certificate! Auction starts now at $1.', 'success');
             }
             
-            // debugLog('✅ CONTENT LISTED SUCCESSFULLY!');
+            debugLog('✅ CONTENT LISTED SUCCESSFULLY!');
             
             resetCamera();
         }
