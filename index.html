@@ -79,6 +79,10 @@
     <h1>Native Camera Test</h1>
     <p>Click button → Camera opens instantly!</p>
     
+    <div style="margin-bottom: 15px; padding: 10px; background: #1a1a1a; border-radius: 4px;" id="deviceInfo">
+        <div style="font-size: 12px; color: #888;">Detecting device...</div>
+    </div>
+    
     <div style="margin-bottom: 15px; padding: 10px; background: #1a1a1a; border-radius: 4px;">
         <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
             <input type="checkbox" id="premiumToggle" onchange="togglePremium()" style="width: 20px; height: 20px;">
@@ -87,6 +91,20 @@
     </div>
     
     <button class="btn" onclick="openCamera()">📸 Take Photo/Video</button>
+    
+    <script>
+        // Show device info on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            const deviceInfo = document.getElementById('deviceInfo');
+            const mobile = isMobileDevice();
+            
+            if (mobile) {
+                deviceInfo.innerHTML = '<div style="color: #00ff88;">📱 Mobile device detected - Ready to capture!</div>';
+            } else {
+                deviceInfo.innerHTML = '<div style="color: #ff8800;">💻 Desktop detected - You\'ll be prompted to select files</div>';
+            }
+        });
+    </script>
     
     <div class="status" id="status">Ready to capture...</div>
     
@@ -127,6 +145,21 @@
             isPremium: false // Change to true to test premium features
         };
         
+        function isMobileDevice() {
+            // Check if device is mobile/tablet
+            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+            
+            // Check for mobile devices
+            const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
+            const isMobile = mobileRegex.test(userAgent.toLowerCase());
+            
+            // Also check screen size (tablets might not be detected by user agent)
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const smallScreen = window.innerWidth <= 1024;
+            
+            return isMobile || (hasTouch && smallScreen);
+        }
+        
         function togglePremium() {
             currentUser.isPremium = document.getElementById('premiumToggle').checked;
             log(`${currentUser.isPremium ? '⭐ Premium mode enabled' : '👤 Regular mode'}`);
@@ -147,6 +180,29 @@
         
         function openCamera() {
             log('📸 openCamera called');
+            
+            // Check if mobile device
+            if (!isMobileDevice()) {
+                log('⚠️ Desktop device detected');
+                const useAnyway = confirm(
+                    '📱 Mobile Device Required\n\n' +
+                    'This feature is designed for mobile devices with cameras.\n\n' +
+                    'On desktop/laptop, you can:\n' +
+                    '• Select existing photos/videos from your files\n' +
+                    '• Use a webcam (if available)\n\n' +
+                    'For the best experience, please use your phone or tablet.\n\n' +
+                    'Continue anyway?'
+                );
+                
+                if (!useAnyway) {
+                    log('❌ User cancelled (desktop detected)');
+                    return;
+                }
+                
+                log('✅ User chose to continue on desktop');
+            } else {
+                log('✅ Mobile device detected');
+            }
             
             // Create file input
             const input = document.createElement('input');
