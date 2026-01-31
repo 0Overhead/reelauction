@@ -1880,33 +1880,6 @@
         }
 
         let currentUser = null;
-        
-        // Mobile device detection for camera blocking
-        function isMobileDevice() {
-            const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-            const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i;
-            const isMobile = mobileRegex.test(userAgent.toLowerCase());
-            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            const smallScreen = window.innerWidth <= 1024;
-            return isMobile || (hasTouch && smallScreen);
-        }
-        
-        // Get video duration for trimming check
-        async function getVideoDuration(file) {
-            return new Promise((resolve) => {
-                const video = document.createElement('video');
-                video.preload = 'metadata';
-                video.onloadedmetadata = function() {
-                    window.URL.revokeObjectURL(video.src);
-                    resolve(video.duration);
-                };
-                video.onerror = function() {
-                    resolve(0);
-                };
-                video.src = URL.createObjectURL(file);
-            });
-        }
-        
         let mediaStream = null;
         let mediaRecorder = null;
         let recordedChunks = [];
@@ -2318,91 +2291,118 @@
         // ========================================
         
         async function openProCapture() {
+            debugLog('🚀 openProCapture called');
+            
             if (!currentUser) {
+                debugLog('❌ No user logged in');
                 showStatus('Please login to create content', 'error');
                 showSection('loginSection');
                 return;
             }
             
-            // Check if mobile device - block desktop
-            if (!isMobileDevice()) {
-                alert(
-                    '📱 Mobile Device Required\n\n' +
-                    'ReelAuction requires live photo/video capture to ensure authenticity.\n\n' +
-                    'This feature only works on:\n' +
-                    '• iPhone / iPad\n' +
-                    '• Android phones / tablets\n\n' +
-                    'Please open ReelAuction on your mobile device to capture and list content.\n\n' +
-                    'Why? To guarantee every item is authentic with server-verified timestamps and GPS data.'
-                );
-                return;
-            }
-            
+            debugLog('✅ User logged in', { user: currentUser.name });
             isProCapture = true;
             
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = 'image/*,video/*';
-            input.capture = 'environment';
-            
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (!file) {
-                    showStatus('No file selected', 'error');
-                    return;
-                }
+            try {
+                // Request camera/microphone access
+                showStatus('📸 Opening camera...', 'info');
+                debugLog('📸 Creating file input for camera');
                 
-                // Check video duration
-                if (file.type.startsWith('video/')) {
-                    const duration = await getVideoDuration(file);
-                    if (duration > 60) {
-                        showStatus('📤 Uploading video (will trim to 60 seconds)...', 'info');
-                    } else {
-                        showStatus('📤 Uploading video...', 'info');
+                // Use native file input with camera capture
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = 'image/*,video/*';
+                // Removed capture="environment" - it may cause issues on some devices
+                input.setAttribute('capture', ''); // Empty capture = works on more devices
+                
+                debugLog('📸 File input created, setting onchange handler');
+                
+                input.onchange = async (e) => {
+                    debugLog('📸 ONCHANGE TRIGGERED!');
+                    const file = e.target.files[0];
+                    
+                    debugLog('📸 Checking if file exists...', { fileExists: !!file });
+                    
+                    if (!file) {
+                        debugLog('❌ No file selected');
+                        showStatus('No file selected', 'error');
+                        return;
                     }
-                } else {
-                    showStatus('📤 Uploading photo...', 'info');
-                }
+                    
+                    debugLog('✅ File received', { 
+                        name: file.name, 
+                        type: file.type, 
+                        size: file.size 
+                    });
+                    
+                    // Show uploading status
+                    showStatus('📤 Uploading to cloud...', 'info');
+                    
+                    // Upload to Cloudinary
+                    await uploadToCloudinary(file);
+                };
                 
-                await uploadToCloudinary(file);
-            };
-            
-            showStatus('📸 Opening camera...', 'info');
-            input.click();
+                // Also add onerror handler
+                input.onerror = (e) => {
+                    debugLog('❌ Input error', { error: e });
+                };
+                
+                // Also add oncancel handler
+                input.oncancel = () => {
+                    debugLog('⚠️ User cancelled file selection');
+                    showStatus('Capture cancelled', 'info');
+                };
+                
+                // Trigger file picker (opens camera on mobile)
+                debugLog('📸 Clicking file input to open camera');
+                input.click();
+                
+                // Add debug after a delay to see if anything happens
+                setTimeout(() => {
+                    debugLog('⏰ 2 seconds elapsed - waiting for file selection...');
+                }, 2000);
+                
+            } catch (error) {
+                debugLog('❌ Camera error', { error: error.message });
+                console.error('Camera error:', error);
+                showStatus('Camera access denied. Please enable camera permissions.', 'error');
+            }
         }
         
         async function uploadToCloudinary(file) {
+            debugLog('📤 uploadToCloudinary started', { fileName: file.name, fileType: file.type });
+            
             try {
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', 'pro_capture');
+                formData.append('cloud_name', 'dtfymlzzr');
                 
+                // Detect if it's a video or image
                 const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
+                debugLog(`📤 Resource type: ${resourceType}`);
+                
                 const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
+                debugLog('📤 Uploading to Cloudinary...');
                 
                 const response = await fetch(uploadUrl, {
                     method: 'POST',
                     body: formData
                 });
                 
+                debugLog(`📤 Upload response status: ${response.status}`);
+                
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('Upload failed:', errorText);
-                    showStatus('Upload failed. Please try again.', 'error');
-                    return;
+                    debugLog('❌ Upload failed', { status: response.status, error: errorText });
+                    throw new Error('Upload failed: ' + errorText);
                 }
                 
                 const data = await response.json();
+                debugLog('✅ Upload successful!', { url: data.secure_url });
                 
-                // For videos > 60s, create trimmed URL
-                if (resourceType === 'video' && data.duration > 60) {
-                    const originalUrl = data.secure_url;
-                    data.secure_url = originalUrl.replace('/upload/', '/upload/du_60/');
-                    data.wasTrimmed = true;
-                    data.originalDuration = data.duration;
-                    data.duration = 60;
-                }
-                
+                // Process the uploaded file
+                debugLog('🔄 Calling handleCloudinaryUpload...');
                 await handleCloudinaryUpload(null, {
                     event: 'success',
                     info: {
@@ -2414,14 +2414,14 @@
                         height: data.height,
                         duration: data.duration,
                         image_metadata: data.image_metadata || {},
-                        public_id: data.public_id,
-                        wasTrimmed: data.wasTrimmed || false
+                        public_id: data.public_id
                     }
                 });
                 
             } catch (error) {
+                debugLog('❌ Upload error', { error: error.message });
                 console.error('Upload error:', error);
-                showStatus('Upload failed. Please try again.', 'error');
+                showStatus('Upload failed. Please try again. Error: ' + error.message, 'error');
             }
         }
         
