@@ -220,12 +220,6 @@
                 const resourceType = file.type.startsWith('video/') ? 'video' : 'image';
                 log(`📤 Resource type: ${resourceType}`);
                 
-                // For videos, add transformation to trim to 60 seconds
-                if (resourceType === 'video') {
-                    formData.append('eager', 'du_60'); // Trim to 60 seconds duration
-                    log('✂️ Video will be trimmed to 60 seconds');
-                }
-                
                 const uploadUrl = `https://api.cloudinary.com/v1_1/dtfymlzzr/${resourceType}/upload`;
                 log(`📤 Uploading to: ${uploadUrl}`);
                 
@@ -246,13 +240,27 @@
                 
                 const data = await response.json();
                 
-                // Check if video was trimmed
-                if (resourceType === 'video' && data.duration > 60) {
-                    log(`✂️ Video trimmed from ${Math.round(data.duration)}s to 60s`);
-                    data.wasTrimmed = true;
-                    data.originalDuration = data.duration;
-                } else if (resourceType === 'video') {
-                    log(`✅ Video duration: ${Math.round(data.duration)}s (no trim needed)`);
+                // For videos, check duration and create trimmed URL if needed
+                if (resourceType === 'video') {
+                    const duration = data.duration || 0;
+                    log(`🎥 Video duration: ${Math.round(duration)} seconds`);
+                    
+                    if (duration > 60) {
+                        // Create trimmed URL by inserting transformation
+                        // Original: https://res.cloudinary.com/dtfymlzzr/video/upload/v1234567890/abc123.mp4
+                        // Trimmed:  https://res.cloudinary.com/dtfymlzzr/video/upload/du_60/v1234567890/abc123.mp4
+                        const originalUrl = data.secure_url;
+                        const trimmedUrl = originalUrl.replace('/upload/', '/upload/du_60/');
+                        
+                        log(`✂️ Video is ${Math.round(duration)}s, using trimmed URL`);
+                        data.secure_url = trimmedUrl; // Use trimmed version
+                        data.original_url = originalUrl; // Keep original
+                        data.wasTrimmed = true;
+                        data.originalDuration = duration;
+                        data.duration = 60; // Set to 60 for display
+                    } else {
+                        log(`✅ Video is ${Math.round(duration)}s (no trim needed)`);
+                    }
                 }
                 
                 log(`✅ Upload success! URL: ${data.secure_url}`);
